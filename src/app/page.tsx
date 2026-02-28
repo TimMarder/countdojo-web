@@ -1,70 +1,72 @@
 import Image from "next/image";
+import { useState } from "react";
 
 export default function Home() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  const screenshots = [
+    { src: "/images/IMG_6359.jpg", alt: "Skill Tree Progress" },
+    { src: "/images/IMG_6360.jpg", alt: "Practice Drills" },
+    { src: "/images/IMG_6361.jpg", alt: "Profile & Statistics" },
+    { src: "/images/IMG_6362.jpg", alt: "Reference Library" },
+  ];
+  
+  const nextSlide = () => setCurrentSlide((currentSlide + 1) % screenshots.length);
+  const prevSlide = () => setCurrentSlide((currentSlide - 1 + screenshots.length) % screenshots.length);
+  
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div #min-h-screen bg-gray-900 text-white font-sans">
       {/* Navigation */}
-      <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
-        <div className="flex items-center gap-3">
+      <nav #px-6 py-4 max-w-7xl mx-auto">
+        <div #flex items-center justify-center">
           <Image 
-            src="/images/Count Dojo Transparent Logo.png" 
+            src="/images/Count Dojo Banner Transparent Background.png" 
             alt="Count Dojo" 
-            width={40} 
-            height={40}
-            className="rounded-lg"
+            width={280}
+            height={60}
+            #h-auto"
+            priority
           />
-          <span className="text-xl font-bold">Count Dojo</span>
-        </div>
-        <div className="flex gap-6">
-          <a href="#features" className="text-slate-300 hover:text-white transition">Features</a>
-          <a href="#screenshots" className="text-slate-300 hover:text-white transition">Screenshots</a>
-          <a href="#faq" className="text-slate-300 hover:text-white transition">FAQ</a>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="px-6 py-20 text-center max-w-4xl mx-auto">
-        <h1 className="text-5xl md:text-6xl font-bold mb-6">
+      <section #px-6 py-24 text-center max-w-3xl mx-auto">
+        <h1 #text-5xl md:text-6xl font-bold mb-6 tracking-tight">
           Train to Beat the Casino
         </h1>
-        <p className="text-xl text-slate-400 mb-4">
+        <p #text-xl text-gray-400 mb-4 font-light">
           Card counting made simple
         </p>
-        <p className="text-lg text-slate-300 mb-10 max-w-2xl mx-auto">
+        <p #text-base text-gray-300 mb-10 max-w-xl mx-auto leading-relaxed">
           The world's first gamified card counting education app. Learn to count cards 
-          from absolute beginner to casino-ready in 90 days. Like Duolingo, but for blackjack.
+          from absolute beginner to casino-ready in 90 days.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a 
-            href="#" 
-            className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition flex items-center justify-center gap-2"
-          >
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+        <div #flex flex-col sm:flex-row gap-4 justify-center">
+          <a #bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-lg font-medium text-base transition flex items-center justify-center gap-3">
+            <svg #w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.61-3.74 4.25z"/>
             </svg>
-            Download on App Store
+            App Store
           </a>
-          <a 
-            href="#" 
-            className="bg-slate-700 hover:bg-slate-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition flex items-center justify-center gap-2"
-          >
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+          <a #bg-gray-800 hover:bg-gray-700 text-white px-8 py-3.5 rounded-lg font-medium text-base transition flex items-center justify-center gap-3">
+            <svg #w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.609-.814V2.628a1 1 0 01.609-.814zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 010 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.302 2.302-8.635-8.634z"/>
             </svg>
-            Get it on Google Play
+            Google Play
           </a>
         </div>
       </section>
 
       {/* Features */}
-      <section id="features" className="px-6 py-20 bg-slate-800">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">Everything You Need</h2>
-          <p className="text-xl text-slate-400 text-center mb-16">
+      <section #px-6 py-24 bg-gray-800/50">
+        <div #max-w-6xl mx-auto">
+          <h2 #text-3xl font-bold text-center mb-3">Everything You Need</h2>
+          <p #text-gray-400 text-center mb-16 max-w-2xl mx-auto">
             The only A to Z platform that teaches card counting from beginner to advanced
           </p>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div #grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard 
               emoji="📚"
               title="Structured Curriculum"
@@ -99,64 +101,62 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Screenshots */}
-      <section id="screenshots" className="px-6 py-20">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">See It In Action</h2>
-          <p className="text-xl text-slate-400 text-center mb-12">
-            Beautiful, intuitive design that makes learning addictive
+      {/* Screenshots Carousel */}
+      <section #px-6 py-24">
+        <div #max-w-md mx-auto">
+          <h2 #text-3xl font-bold text-center mb-3">See It In Action</h2>
+          <p #text-gray-400 text-center mb-12">
+            Beautiful, intuitive design
           </p>
           
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-slate-800 rounded-2xl p-4 overflow-hidden">
+          <div #relative">
+            <div #bg-gray-800 rounded-2xl p-3 overflow-hidden aspect-[9/19]">
               <Image 
-                src="/images/IMG_6359.jpg" 
-                alt="Skill Tree" 
-                width={400}
-                height={800}
-                className="rounded-xl w-full h-auto"
+                src={screenshots[currentSlide].src}
+                alt={screenshots[currentSlide].alt}
+                width={350}
+                height={700}
+                #rounded-xl w-full h-full object-cover"
               />
-              <p className="text-center text-slate-400 mt-4">Skill Tree Progress</p>
             </div>
-            <div className="bg-slate-800 rounded-2xl p-4 overflow-hidden">
-              <Image 
-                src="/images/IMG_6360.jpg" 
-                alt="Practice Drills" 
-                width={400}
-                height={800}
-                className="rounded-xl w-full h-auto"
-              />
-              <p className="text-center text-slate-400 mt-4">Practice Drills</p>
+            
+            {/* Carousel Controls */}
+            <div #flex justify-center gap-2 mt-6">
+              <a 
+                onClick={prevSlide}
+                #w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition"
+              >
+                ←
+              </a>
+              <div #flex items-center gap-2">
+                {screenshots.map((_, i) => (
+                  <a
+                    key={i}
+                    onClick={() => setCurrentSlide(i)}
+                    className={`w-2 h-2 rounded-full transition ${i === currentSlide ? 'bg-emerald-500 w-6' : 'bg-gray-700'}`}
+                  />
+                ))}
+              </div>
+              <a 
+                onClick={nextSlide}
+                #w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition"
+              >
+                →
+              </a>
             </div>
-            <div className="bg-slate-800 rounded-2xl p-4 overflow-hidden">
-              <Image 
-                src="/images/IMG_6361.jpg" 
-                alt="Profile Stats" 
-                width={400}
-                height={800}
-                className="rounded-xl w-full h-auto"
-              />
-              <p className="text-center text-slate-400 mt-4">Profile & Statistics</p>
-            </div>
-            <div className="bg-slate-800 rounded-2xl p-4 overflow-hidden">
-              <Image 
-                src="/images/IMG_6362.jpg" 
-                alt="Reference Library" 
-                width={400}
-                height={800}
-                className="rounded-xl w-full h-auto"
-              />
-              <p className="text-center text-slate-400 mt-4">Reference Library</p>
-            </div>
+            
+            <p #text-center text-gray-500 text-sm mt-4">
+              {currentSlide + 1} of {screenshots.length}
+            </p>
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="px-6 py-20 bg-slate-800">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-12">What Players Say</h2>
-          <div className="grid md:grid-cols-2 gap-8">
+      <section #px-6 py-24 bg-gray-800/50">
+        <div #max-w-4xl mx-auto">
+          <h2 #text-3xl font-bold text-center mb-12">What Players Say</h2>
+          <div #grid md:grid-cols-2 gap-6">
             <Testimonial 
               quote="I went from knowing nothing about card counting to being able to count down a deck in 30 seconds. This app is legit."
               author="Mike R."
@@ -166,7 +166,7 @@ export default function Home() {
               author="Sarah L."
             />
             <Testimonial 
-              quote="Finally, a structured way to learn card counting. No more YouTube videos or books. This is exactly what I needed."
+              quote="Finally, a structured way to learn card counting. No more YouTube videos or books."
               author="James T."
             />
             <Testimonial 
@@ -178,60 +178,49 @@ export default function Home() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="px-6 py-20">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+      <section #px-6 py-24">
+        <div #max-w-2xl mx-auto">
+          <h2 #text-3xl font-bold text-center mb-12">Questions?</h2>
           
           <FAQItem 
             question="Is card counting legal?"
-            answer="Yes! Card counting is completely legal. Casinos may ask you to leave (trespassing), but you can't be arrested for using your brain. However, using devices or collaborating with others may violate laws in some jurisdictions."
+            answer="Yes! Card counting is completely legal. Casinos may ask you to leave (trespassing), but you can't be arrested for using your brain. However, using devices may violate laws in some jurisdictions."
           />
           
           <FAQItem 
             question="Will this app guarantee I win at blackjack?"
-            answer="No gambling system can guarantee wins. Card counting gives you a mathematical edge, but variance means you can still lose in the short term. This app teaches skills that improve your odds - it doesn't promise profits."
+            answer="No gambling system can guarantee wins. Card counting gives you a mathematical edge, but variance means you can still lose in the short term."
           />
           
           <FAQItem 
             question="How long does it take to learn?"
-            answer="Most users complete the basic curriculum in 30-60 days with daily practice. Mastery requires ongoing drilling. Think of it like learning a musical instrument - fundamentals take weeks, mastery takes years."
+            answer="Most users complete the basic curriculum in 30-60 days with daily practice. Mastery requires ongoing drilling."
           />
           
           <FAQItem 
             question="Do I need to be good at math?"
-            answer="Not at all! Hi-Lo counting only requires adding and subtracting 1. The app handles all the complex calculations. You just need to practice."
+            answer="Not at all! Hi-Lo counting only requires adding and subtracting 1. The app handles all the complex calculations."
           />
           
           <FAQItem 
             question="What's the difference between free and premium?"
-            answer="The free tier includes all of Unit 1 (basic strategy) and the first portion of Unit 2 (intro to counting). Premium unlocks true count conversion, bet sizing, deviations, advanced drills, and the casino simulator."
-          />
-          
-          <FAQItem 
-            question="Can I practice on my phone or tablet?"
-            answer="Yes! Count Dojo is available on iOS and Android. Practice anywhere, anytime - even offline."
+            answer="The free tier includes basic strategy and intro to counting. Premium unlocks true count conversion, bet sizing, deviations, and the casino simulator."
           />
         </div>
       </section>
 
       {/* CTA */}
-      <section className="px-6 py-20 bg-emerald-600">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to Beat the Casino?</h2>
-          <p className="text-xl mb-8 text-emerald-100">
-            Start your card counting journey today. Free to download, free to try.
+      <section #px-6 py-24 bg-emerald-600">
+        <div #max-w-2xl mx-auto text-center">
+          <h2 #text-3xl font-bold mb-4">Ready to Beat the Casino?</h2>
+          <p #text-emerald-100 mb-8">
+            Start your card counting journey today.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a 
-              href="#" 
-              className="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold text-lg transition hover:bg-emerald-50"
-            >
+          <div #flex flex-col sm:flex-row gap-4 justify-center">
+            <a #bg-white text-emerald-600 px-8 py-3.5 rounded-lg font-medium text-base hover:bg-emerald-50 transition">
               Download on App Store
             </a>
-            <a 
-              href="#" 
-              className="bg-emerald-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition hover:bg-emerald-800"
-            >
+            <a #bg-emerald-700 text-white px-8 py-3.5 rounded-lg font-medium text-base hover:bg-emerald-800 transition">
               Get it on Google Play
             </a>
           </div>
@@ -239,24 +228,21 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="px-6 py-12 bg-slate-900 border-t border-slate-800">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-3">
-            <Image 
-              src="/images/Count Dojo Transparent Logo.png" 
-              alt="Count Dojo" 
-              width={32} 
-              height={32}
-              className="rounded"
-            />
-            <span className="font-bold">Count Dojo</span>
+      <footer #px-6 py-12 bg-gray-900 border-t border-gray-800">
+        <div #max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+          <Image 
+            src="/images/Count Dojo Banner Transparent Background.png" 
+            alt="Count Dojo" 
+            width={200}
+            height={40}
+            #h-auto"
+          />
+          <div #flex gap-8 text-gray-500 text-sm">
+            <a href="#" #hover:text-white transition">Privacy</a>
+            <a href="#" #hover:text-white transition">Terms</a>
+            <a href="mailto:support@countdojo.com" #hover:text-white transition">Contact</a>
           </div>
-          <div className="flex gap-6 text-slate-400">
-            <a href="#" className="hover:text-white transition">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition">Terms of Service</a>
-            <a href="mailto:support@countdojo.com" className="hover:text-white transition">Contact</a>
-          </div>
-          <p className="text-slate-500">© 2026 Count Dojo. All rights reserved.</p>
+          <p #text-gray-600 text-sm">© 2026 Count Dojo</p>
         </div>
       </footer>
     </div>
@@ -265,28 +251,28 @@ export default function Home() {
 
 function FeatureCard({ emoji, title, description }: { emoji: string; title: string; description: string }) {
   return (
-    <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600">
-      <div className="text-4xl mb-4">{emoji}</div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-slate-400">{description}</p>
+    <div #bg-gray-800/50 rounded-2xl p-6 border border-gray-700/50 hover:border-gray-600 transition duration-300">
+      <div #text-3xl mb-4">{emoji}</div>
+      <h3 #text-lg font-semibold mb-2">{title}</h3>
+      <p #text-gray-400 text-sm leading-relaxed">{description}</p>
     </div>
   );
 }
 
 function Testimonial({ quote, author }: { quote: string; author: string }) {
   return (
-    <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600">
-      <p className="text-slate-300 mb-4 italic">"{quote}"</p>
-      <p className="text-emerald-400 font-semibold">— {author}</p>
+    <div #bg-gray-800/50 rounded-2xl p-6 border border-gray-700/50">
+      <p #text-gray-300 mb-4 leading-relaxed">"{quote}"</p>
+      <p #text-emerald-400 font-medium text-sm">— {author}</p>
     </div>
   );
 }
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   return (
-    <div className="border-b border-slate-700 py-6">
-      <h3 className="text-lg font-semibold mb-2">{question}</h3>
-      <p className="text-slate-400">{answer}</p>
+    <div #border-b border-gray-800 py-6">
+      <h3 #font-medium mb-2">{question}</h3>
+      <p #text-gray-500 text-sm leading-relaxed">{answer}</p>
     </div>
   );
 }
