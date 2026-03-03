@@ -23,7 +23,7 @@ export default function TermsPage() {
       </header>
 
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-6 py-16">
+      <main className="max-w-4xl mx-auto px-6 py-16 pt-[90px]">
         <h1 className="text-4xl font-bold mb-4">Terms of Service</h1>
         <p className="text-gray-400 mb-8">Effective Date: March 3, 2026</p>
 
