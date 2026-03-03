@@ -509,7 +509,7 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 px-6 sm:px-10 lg:px-12 overflow-hidden" id="top">
+      <section className="relative pt-32 pb-16 px-6 sm:px-10 lg:px-12 overflow-hidden" id="top">
         <div className="absolute inset-0 rounded-[48px] sm:rounded-[64px] bg-gray-900/70 border border-white/5 mx-3 sm:mx-6" />
         <div className="absolute inset-0">
           <video
