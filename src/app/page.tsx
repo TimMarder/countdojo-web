@@ -714,7 +714,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Logo Column */}
-            <div className="col-span-1 md:col-span-3">
+            <div>
               <div className="relative h-16 w-[300px]">
                 <Image
                   src="/images/Count Dojo Banner Transparent Background.png"
@@ -766,7 +766,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="border-t border-white/10 mt-8 pt-6 text-center text-gray-500 text-sm">
+          <div className="border-t border-white/10 mt-8 pt-6 col-span-1 md:col-span-3 text-center text-gray-500 text-sm">
             <p>© 2026 Count Dojo. All rights reserved.</p>
           </div>
         </div>
