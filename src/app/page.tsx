@@ -448,7 +448,7 @@ export default function Home() {
 
       {/* Header - sits above hero, not overlapping */}
       <header
-        className="sticky top-0 left-0 right-0 z-50 bg-gray-950/95 border-b border-white/5 h-[90px] overflow-hidden backdrop-blur-xl"
+        className="fixed top-0 left-0 right-0 z-50 bg-gray-950/95 border-b border-white/5 h-[90px] overflow-hidden backdrop-blur-xl"
       >
         <div className="max-w-6xl mx-auto h-full px-2 w-full flex items-center justify-between">
           <div className="h-full flex items-center overflow-hidden">
@@ -509,7 +509,7 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-16 px-6 sm:px-10 lg:px-12 overflow-hidden" id="top">
+      <section className="relative pt-24 pb-16 px-6 sm:px-10 lg:px-12 overflow-hidden" id="top">
         <div className="absolute inset-0 rounded-[48px] sm:rounded-[64px] bg-gray-900/70 border border-white/5 mx-3 sm:mx-6" />
         <div className="absolute inset-0">
           <video
