@@ -445,7 +445,7 @@ export default function Home() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-gray-400 hover:text-white text-sm font-medium transition-all duration-200 relative after:absolute after:left-1/2 after:-bottom-1 after:h-px after:w-0 after:bg-emerald-400 after:transition-all after:duration-300 hover:after:w-full hover:after:left-0"
+                className="nav-link text-gray-400 hover:text-white text-sm font-medium transition-all duration-200 relative after:absolute after:left-1/2 after:-bottom-1 after:h-px after:w-0 after:bg-emerald-400 after:transition-all after:duration-300 hover:after:w-full hover:after:left-0"
               >
                 {link.label}
               </a>
@@ -715,7 +715,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {/* Logo Column */}
             <div>
-              <div className="relative h-20 w-[200px]">
+              <div className="relative h-60 w-[600px]">
                 <Image
                   src="/images/Count Dojo Banner Transparent Background.png"
                   alt="Count Dojo"
@@ -732,9 +732,6 @@ export default function Home() {
             <div>
               <h3 className="text-lg font-semibold mb-3 text-emerald-400">Quick Links</h3>
               <ul className="space-y-2">
-                <li><a href="#features" className="text-gray-400 hover:text-white transition-colors">Features</a></li>
-                <li><a href="#screenshots" className="text-gray-400 hover:text-white transition-colors">Screenshots</a></li>
-                <li><a href="#faq" className="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
                 <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy</a></li>
                 <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Terms</a></li>
               </ul>

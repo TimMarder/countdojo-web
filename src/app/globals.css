@@ -339,6 +339,20 @@ body {
   transform: translateY(0);
 }
 
+/* ===== Nav Link Glow & Tilt ===== */
+.nav-link {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background: rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3), 0 0 40px rgba(16, 185, 129, 0.1);
+  transform: translateY(-2px) rotate(1deg);
+}
+
 /* ===== Utilities ===== */
 @layer utilities {
   .text-balance {
