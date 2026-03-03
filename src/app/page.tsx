@@ -504,7 +504,7 @@ export default function Home() {
             alt="Count Dojo"
             width={200}
             height={40}
-            className="h-auto w-36 sm:w-44"
+            className="h-auto w-48 sm:w-56"
             priority
           />
 
