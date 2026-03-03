@@ -717,7 +717,7 @@ export default function Home() {
             <div className="col-span-1 md:col-span-3">
               <div className="relative h-64 w-[1200px] max-w-full">
                 <Image
-                  src="/images/Count Dojo Banner Transparent Background.png"
+                  src="/images/Count Dojo Banner Transparent Background NO BORDERS.png"
                   alt="Count Dojo"
                   fill
                   className="object-contain object-left"
