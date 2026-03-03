@@ -150,7 +150,7 @@ export default function TermsPage() {
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <Link href="/" className="relative h-16 w-[300px] block">
+              <Link href="/" className="relative h-[86px] w-full max-w-[300px] block">
                 <Image
                   src="/images/Count Dojo Banner Transparent Background NO BORDERS.png"
                   alt="Count Dojo"
