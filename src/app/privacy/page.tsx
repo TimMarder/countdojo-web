@@ -7,16 +7,18 @@ export default function PrivacyPage() {
       {/* Header */}
       <header className="sticky top-0 left-0 right-0 z-50 bg-gray-950/95 border-b border-white/5 h-[90px] overflow-hidden backdrop-blur-xl">
         <div className="max-w-6xl mx-auto h-full px-2 w-full flex items-center justify-between">
-          <Link href="/" className="h-full flex items-center overflow-hidden">
-            <Image
-              src="/images/Count Dojo Banner Transparent Background NO BORDERS.png"
-              alt="Count Dojo"
-              width={200}
-              height={40}
-              className="h-[150px] w-auto object-cover"
-              priority
-            />
-          </Link>
+          <div className="h-full flex items-center overflow-hidden">
+            <Link href="/">
+              <Image
+                src="/images/Count Dojo Banner Transparent Background NO BORDERS.png"
+                alt="Count Dojo"
+                width={200}
+                height={40}
+                className="h-[150px] w-auto object-cover"
+                priority
+              />
+            </Link>
+          </div>
         </div>
       </header>
 
