@@ -157,12 +157,6 @@ const faqList: FAQ[] = [
   },
 ];
 
-const stats = [
-  { value: 12000, suffix: "+", label: "Active students" },
-  { value: 42, suffix: " days", label: "Average streak" },
-  { value: 2300000, suffix: "", label: "Decks drilled" },
-];
-
 const screenshots = [
   { src: "/images/IMG_6359.jpg", alt: "Skill Tree" },
   { src: "/images/IMG_6360.jpg", alt: "Practice" },
@@ -403,72 +397,6 @@ function MagneticButton({
   );
 }
 
-// Animated Counter Component
-function AnimatedCounter({ 
-  value, 
-  suffix = "",
-  className = "" 
-}: { 
-  value: number; 
-  suffix?: string;
-  className?: string;
-}) {
-  const [count, setCount] = useState(0);
-  const [isCounting, setIsCounting] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isCounting) {
-          setIsCounting(true);
-        }
-      },
-      { threshold: 0.5 }
-    );
-
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [isCounting]);
-
-  useEffect(() => {
-    if (!isCounting) return;
-
-    const duration = 2000;
-    const startTime = Date.now();
-    const startValue = 0;
-
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Easing function (ease-out)
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const currentValue = Math.floor(startValue + (value - startValue) * eased);
-      
-      setCount(currentValue);
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-
-    requestAnimationFrame(animate);
-  }, [isCounting, value]);
-
-  // Format number with commas
-  const formatted = count.toLocaleString();
-
-  return (
-    <span ref={ref} className={`${className} ${isCounting ? 'stat-number counting' : ''}`}>
-      {formatted}{suffix}
-    </span>
-  );
-}
-
 // Main Page Component
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -476,7 +404,6 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [navHidden, setNavHidden] = useState(false);
   const [scrollY, setScrollY] = useState(0);
-  const [heroTilt, setHeroTilt] = useState({ x: 0, y: 0 });
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [cursorActive, setCursorActive] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
@@ -560,17 +487,6 @@ export default function Home() {
   };
 
   const heroParallax = useMemo(() => (reduceMotion ? 0 : Math.min(scrollY * 0.12, 120)), [scrollY, reduceMotion]);
-  const accentDrift = useMemo(() => (reduceMotion ? 0 : scrollY * 0.04), [scrollY, reduceMotion]);
-
-  const handleTilt = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (reduceMotion) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width - 0.5) * 10;
-    const y = ((event.clientY - rect.top) / rect.height - 0.5) * -10;
-    setHeroTilt({ x, y });
-  };
-
-  const resetTilt = () => setHeroTilt({ x: 0, y: 0 });
 
   const handlePageLoad = useCallback(() => {
     setPageLoaded(true);
@@ -714,83 +630,8 @@ export default function Home() {
               </MagneticButton>
             </div>
 
-            {/* Stats with Animated Counters */}
-            <div className="grid grid-cols-3 gap-4 mt-12">
-              {stats.map((stat, index) => (
-                <div key={stat.label} className="glass-card glass-card-hover p-4 rounded-2xl">
-                  <p className="text-2xl font-semibold text-white">
-                    <AnimatedCounter value={stat.value} suffix={stat.suffix} />
-                  </p>
-                  <p className="text-xs uppercase tracking-widest text-gray-400">{stat.label}</p>
-                </div>
-              ))}
-            </div>
           </div>
 
-          {/* Phone Mockup with 3D Tilt & Image Zoom */}
-          <div
-            className="relative"
-            onMouseMove={handleTilt}
-            onMouseLeave={resetTilt}
-            style={{ transform: reduceMotion ? undefined : `perspective(1200px)` }}
-          >
-            <div
-              className="absolute -inset-10 bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none"
-              style={{ transform: `translateY(${accentDrift * -1}px)` }}
-            />
-            <div
-              className={`relative rounded-[36px] bg-gray-900/70 border border-white/10 p-5 shadow-2xl backdrop-blur-xl transition-transform duration-300 ease-out ${
-                reduceMotion ? "" : "will-change-transform"
-              }`}
-              style={{ transform: reduceMotion ? undefined : `rotateX(${heroTilt.y}deg) rotateY(${heroTilt.x}deg)` }}
-            >
-              <div className="absolute inset-x-10 -top-8 h-32 bg-gradient-to-r from-emerald-500/40 to-transparent blur-3xl" />
-              <div className={`relative bg-gray-950 rounded-[28px] p-2 border border-white/5 shadow-inner transition-all duration-500 ${isAnimating ? "scale-[.97] opacity-70" : "scale-100 opacity-100"}`}>
-                {/* Screenshot with Zoom Effect */}
-                <div className="screenshot-zoom-container rounded-2xl overflow-hidden">
-                  <Image
-                    src={screenshots[currentSlide].src}
-                    alt={screenshots[currentSlide].alt}
-                    width={360}
-                    height={720}
-                    className="rounded-2xl w-full h-auto"
-                    priority
-                  />
-                </div>
-              </div>
-              {/* Carousel Controls */}
-              <div className="flex items-center gap-3 justify-between mt-6">
-                <button
-                  onClick={prevSlide}
-                  disabled={isAnimating}
-                  className="w-12 h-12 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-all disabled:opacity-40"
-                >
-                  <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <div className="flex items-center gap-2">
-                  {screenshots.map((_, index) => (
-                    <button
-                      key={`dot-${index}`}
-                      onClick={() => !isAnimating && setCurrentSlide(index)}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${index === currentSlide ? "bg-emerald-400 w-8" : "bg-white/20 w-2"}`}
-                    />
-                  ))}
-                </div>
-                <button
-                  onClick={nextSlide}
-                  disabled={isAnimating}
-                  className="w-12 h-12 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-all disabled:opacity-40"
-                >
-                  <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-              <p className="text-center text-xs text-gray-500 mt-4">{currentSlide + 1} of {screenshots.length}</p>
-            </div>
-          </div>
         </div>
 
         <a
