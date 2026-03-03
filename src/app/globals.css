@@ -355,8 +355,9 @@ body {
 
 /* ===== Footer Links ===== */
 footer .nav-link {
-  padding: 2px 4px;
-  margin: -2px -4px;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 /* ===== Utilities ===== */
