@@ -23,7 +23,7 @@ export default function PrivacyPage() {
       </header>
 
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-6 py-16 pt-[90px]">
+      <main className="max-w-4xl mx-auto px-6 py-16 pt-[110px]">
         <h1 className="text-4xl font-bold mb-4">Privacy Policy</h1>
         <p className="text-gray-400 mb-8">Effective Date: March 3, 2026</p>
 
