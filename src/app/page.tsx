@@ -710,12 +710,12 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="px-6 py-12 bg-gray-950 border-t border-white/5">
+      <footer className="px-6 py-8 bg-gray-950 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Logo Column */}
-            <div>
-              <div className="relative h-60 w-[600px]">
+            <div className="col-span-1 md:col-span-3">
+              <div className="relative h-16 w-[300px]">
                 <Image
                   src="/images/Count Dojo Banner Transparent Background.png"
                   alt="Count Dojo"
@@ -724,7 +724,7 @@ export default function Home() {
                 />
               </div>
               <p className="text-gray-400 text-sm mt-3">
-                Master the art of card counting. The world's first gamified card counting education app.
+                Master the art of card counting.
               </p>
             </div>
 
