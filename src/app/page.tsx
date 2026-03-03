@@ -496,7 +496,7 @@ export default function Home() {
 
       {/* Header - sits above hero, not overlapping */}
       <div
-        className={`relative z-50 bg-gray-950 border-b border-white/5 h-[80px] py-px flex items-center`}
+        className={`relative z-50 bg-gray-950 border-b border-white/5 h-[80px] py-0 flex items-center`}
       >
         <div className="max-w-6xl mx-auto px-2 w-full flex items-center justify-between">
           <Image
