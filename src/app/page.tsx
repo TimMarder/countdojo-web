@@ -715,7 +715,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Logo Column */}
             <div className="col-span-1 md:col-span-3">
-              <div className="relative h-64 w-[1200px] max-w-full">
+              <div className="relative h-16 w-[300px]">
                 <Image
                   src="/images/Count Dojo Banner Transparent Background NO BORDERS.png"
                   alt="Count Dojo"
