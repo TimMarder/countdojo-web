@@ -355,8 +355,6 @@ export default function Home() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-  const [cursorActive, setCursorActive] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
   const [carouselDirection, setCarouselDirection] = useState<'left' | 'right' | null>(null);
 
@@ -381,26 +379,6 @@ export default function Home() {
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const handleMove = (event: MouseEvent) => {
-      setCursorPos({ x: event.clientX, y: event.clientY });
-      setCursorActive(true);
-    };
-
-    const handleLeave = (event: MouseEvent) => {
-      if (!event.relatedTarget) {
-        setCursorActive(false);
-      }
-    };
-
-    window.addEventListener("mousemove", handleMove, { passive: true });
-    window.addEventListener("mouseout", handleLeave, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseout", handleLeave);
-    };
   }, []);
 
   useEffect(() => {
@@ -755,14 +733,6 @@ export default function Home() {
           <p className="text-gray-600 text-sm">© 2026 Count Dojo</p>
         </div>
       </footer>
-
-      {/* Custom Cursor */}
-      <div
-        className={`pointer-events-none fixed top-0 left-0 z-[80] hidden md:block transition-opacity duration-300 ${cursorActive ? "opacity-100" : "opacity-0"}`}
-        style={{ transform: `translate3d(${cursorPos.x - 32}px, ${cursorPos.y - 32}px, 0)` }}
-      >
-        <div className="w-16 h-16 rounded-full border border-emerald-400/30 bg-emerald-400/5 backdrop-blur-md animate-pulse-soft" />
-      </div>
     </div>
   );
 }
@@ -812,8 +782,10 @@ function FAQItem({ faq, index }: { faq: FAQ; index: number }) {
           <span className="font-medium text-gray-100">{faq.question}</span>
           <span className={`text-emerald-400 transition-transform duration-300 ${open ? "rotate-45" : "rotate-0"}`}>+</span>
         </button>
-        <div className={`px-5 pb-4 text-sm text-gray-500 leading-relaxed transition-[max-height,opacity] duration-500 overflow-hidden ${open ? "max-h-48 opacity-100" : "max-h-0 opacity-0"}`}>
-          {faq.answer}
+        <div className={`grid transition-all duration-300 ease-out ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
+          <div className="overflow-hidden">
+            <p className="px-5 pb-4 text-sm text-gray-500 leading-relaxed">{faq.answer}</p>
+          </div>
         </div>
       </div>
     </Reveal>
