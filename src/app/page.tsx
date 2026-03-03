@@ -499,13 +499,13 @@ export default function Home() {
         className="relative z-50 bg-gray-950 border-b border-white/5 h-[90px] overflow-hidden"
       >
         <div className="max-w-6xl mx-auto h-full px-2 w-full flex items-center justify-between">
-          <div className="h-full flex items-center">
+          <div className="h-full flex items-center overflow-hidden">
             <Image
               src="/images/Count Dojo Banner Transparent Background.png"
               alt="Count Dojo"
               width={200}
               height={40}
-              className="h-[100px] w-auto object-cover"
+              className="h-full w-auto object-cover scale-[1.2] origin-center"
               priority
             />
           </div>
