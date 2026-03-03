@@ -14,7 +14,7 @@ export default function TermsPage() {
                 alt="Count Dojo"
                 width={200}
                 height={40}
-                className="h-[150px] w-auto object-cover"
+                className="h-[60px] w-auto object-contain"
                 priority
               />
             </Link>
