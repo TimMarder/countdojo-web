@@ -190,8 +190,8 @@ function PageLoader({ onLoaded }: { onLoaded: () => void }) {
       <Image
         src="/images/Count Dojo Banner Transparent Background.png"
         alt="Count Dojo"
-        width={900}
-        height={180}
+        width={4500}
+        height={900}
         className="loader-logo"
         priority
       />
@@ -520,7 +520,7 @@ export default function Home() {
             alt="Count Dojo"
             width={200}
             height={40}
-            className="h-auto w-36 sm:w-48"
+            className="h-auto w-64 sm:w-80"
             priority
           />
 
