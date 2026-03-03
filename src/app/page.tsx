@@ -190,8 +190,8 @@ function PageLoader({ onLoaded }: { onLoaded: () => void }) {
       <Image
         src="/images/Count Dojo Banner Transparent Background.png"
         alt="Count Dojo"
-        width={180}
-        height={36}
+        width={900}
+        height={180}
         className="loader-logo"
         priority
       />
@@ -583,7 +583,7 @@ export default function Home() {
             playsInline
             poster="/images/IMG_6360.jpg"
           >
-            <source src="/videos/cards-loop.mp4" type="video/mp4" />
+            <source src="/videos/blackjack-hero.mp4" type="video/mp4" />
           </video>
           <div className="absolute inset-0 bg-gradient-to-b from-gray-950/40 via-gray-950/80 to-gray-950" />
         </div>
