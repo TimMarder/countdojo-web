@@ -505,7 +505,7 @@ export default function Home() {
               alt="Count Dojo"
               width={200}
               height={40}
-              className="h-full w-auto object-cover scale-[1.2] origin-center"
+              className="h-[150px] w-auto object-cover"
               priority
             />
           </div>
