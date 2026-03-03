@@ -498,13 +498,13 @@ export default function Home() {
       <div
         className={`relative z-50 bg-gray-950 border-b border-white/5 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]`}
       >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-2 sm:px-4 py-1 flex items-center justify-between">
           <Image
             src="/images/Count Dojo Banner Transparent Background.png"
             alt="Count Dojo"
             width={200}
             height={40}
-            className="h-auto w-48 sm:w-56"
+            className="h-auto w-64 sm:w-72"
             priority
           />
 
