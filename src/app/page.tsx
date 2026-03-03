@@ -265,22 +265,10 @@ function BackgroundParticles() {
   );
 }
 
-// Text Scramble Effect
-function ScrambleText({ 
-  text, 
-  className = "",
-  duration = 2000,
-  charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?"
-}: { 
-  text: string; 
-  className?: string;
-  duration?: number;
-  charset?: string;
-}) {
-  const [displayText, setDisplayText] = useState(text);
-  const [isScrambling, setIsScrambling] = useState(false);
-  const ref = useRef<HTMLSpanElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+// Heading entry animation (single subtle reveal)
+function HeadingEntry({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const element = ref.current;
@@ -289,61 +277,25 @@ function ScrambleText({
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
+          setVisible(true);
+          observer.unobserve(entry.target);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.4 }
     );
 
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (!isVisible || isScrambling) return;
-    
-    setIsScrambling(true);
-    const startTime = Date.now();
-    const originalText = text;
-    const textLength = originalText.length;
-
-    const scramble = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Easing function for smoother reveal
-      const eased = 1 - Math.pow(1 - progress, 3);
-      
-      let result = "";
-      const revealIndex = Math.floor(eased * textLength);
-      
-      for (let i = 0; i < textLength; i++) {
-        if (i < revealIndex) {
-          result += originalText[i];
-        } else {
-          // Random character from charset
-          result += charset[Math.floor(Math.random() * charset.length)];
-        }
-      }
-      
-      setDisplayText(result);
-      
-      if (progress < 1) {
-        requestAnimationFrame(scramble);
-      } else {
-        setDisplayText(originalText);
-        setIsScrambling(false);
-      }
-    };
-
-    requestAnimationFrame(scramble);
-  }, [isVisible, text, duration, charset, isScrambling]);
-
   return (
-    <span ref={ref} className={className}>
-      {displayText}
-    </span>
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`heading-entry ${visible ? "is-visible" : ""}`}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -496,7 +448,7 @@ export default function Home() {
 
       {/* Header - sits above hero, not overlapping */}
       <header
-        className="relative z-50 bg-gray-950 border-b border-white/5 h-[90px] overflow-hidden"
+        className="sticky top-0 left-0 right-0 z-50 bg-gray-950/95 border-b border-white/5 h-[90px] overflow-hidden backdrop-blur-xl"
       >
         <div className="max-w-6xl mx-auto h-full px-2 w-full flex items-center justify-between">
           <div className="h-full flex items-center overflow-hidden">
@@ -637,9 +589,9 @@ export default function Home() {
           <Reveal>
             <div className="text-center mb-16">
               <p className="text-sm uppercase tracking-[0.4em] text-emerald-400 mb-3">Curriculum</p>
-              <h2 className="text-3xl font-bold mb-3">
-                <ScrambleText text="Everything You Need" />
-              </h2>
+              <HeadingEntry>
+                <h2 className="text-3xl font-bold mb-3">Everything You Need</h2>
+              </HeadingEntry>
               <p className="text-gray-500 max-w-xl mx-auto">
                 The only A to Z platform that teaches card counting from beginner to advanced.
               </p>
@@ -661,9 +613,9 @@ export default function Home() {
           <Reveal>
             <div className="text-center mb-12">
               <p className="text-sm uppercase tracking-[0.4em] text-emerald-400 mb-3">Product tour</p>
-              <h2 className="text-3xl font-bold">
-                <ScrambleText text="See It In Action" />
-              </h2>
+              <HeadingEntry>
+                <h2 className="text-3xl font-bold">See It In Action</h2>
+              </HeadingEntry>
               <p className="text-gray-500">Beautiful, intuitive design</p>
             </div>
           </Reveal>
