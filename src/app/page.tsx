@@ -715,14 +715,14 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Logo Column */}
             <div>
-              <div className="relative h-[86px] w-full max-w-[300px]">
+              <a href="/" className="relative h-[86px] w-full max-w-[300px] block">
                 <Image
                   src="/images/Count Dojo Banner Transparent Background NO BORDERS.png"
                   alt="Count Dojo"
                   fill
                   className="object-contain object-left"
                 />
-              </div>
+              </a>
             </div>
 
             {/* Quick Links */}

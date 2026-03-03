@@ -13,7 +13,7 @@ export default function TermsPage() {
               alt="Count Dojo"
               width={200}
               height={40}
-              className="h-[90px] w-auto object-contain"
+              className="h-[70px] w-auto object-contain"
               priority
             />
           </Link>
@@ -150,14 +150,14 @@ export default function TermsPage() {
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <div className="relative h-16 w-[300px]">
+              <Link href="/" className="relative h-16 w-[300px] block">
                 <Image
                   src="/images/Count Dojo Banner Transparent Background NO BORDERS.png"
                   alt="Count Dojo"
                   fill
                   className="object-contain object-left"
                 />
-              </div>
+              </Link>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-3 text-emerald-400">Quick Links</h3>
