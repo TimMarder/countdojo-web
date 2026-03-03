@@ -729,8 +729,8 @@ export default function Home() {
             <div>
               <h3 className="text-lg font-semibold mb-3 text-emerald-400">Quick Links</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="nav-link text-gray-400 hover:text-white transition-colors">Privacy</a></li>
-                <li><a href="#" className="nav-link text-gray-400 hover:text-white transition-colors">Terms</a></li>
+                <li><a href="/privacy" className="nav-link text-gray-400 hover:text-white transition-colors">Privacy</a></li>
+                <li><a href="/terms" className="nav-link text-gray-400 hover:text-white transition-colors">Terms</a></li>
               </ul>
             </div>
 
