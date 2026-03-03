@@ -487,6 +487,7 @@ export default function Home() {
   };
 
   const heroParallax = useMemo(() => (reduceMotion ? 0 : Math.min(scrollY * 0.12, 120)), [scrollY, reduceMotion]);
+  const accentDrift = useMemo(() => (reduceMotion ? 0 : scrollY * 0.04), [scrollY, reduceMotion]);
 
   const handlePageLoad = useCallback(() => {
     setPageLoaded(true);
