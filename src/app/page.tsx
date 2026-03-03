@@ -495,18 +495,20 @@ export default function Home() {
       <BackgroundParticles />
 
       {/* Header - sits above hero, not overlapping */}
-      <div
-        className={`relative z-50 bg-gray-950 border-b border-white/5 h-[102px] py-0 flex items-center`}
+      <header
+        className="relative z-50 bg-gray-950 border-b border-white/5 h-[90px] overflow-hidden"
       >
-        <div className="max-w-6xl mx-auto px-2 w-full flex items-center justify-between">
-          <Image
-            src="/images/Count Dojo Banner Transparent Background.png"
-            alt="Count Dojo"
-            width={200}
-            height={40}
-            className="h-[100px] w-auto max-w-[50%] object-contain"
-            priority
-          />
+        <div className="max-w-6xl mx-auto h-full px-2 w-full flex items-center justify-between">
+          <div className="h-full flex items-center">
+            <Image
+              src="/images/Count Dojo Banner Transparent Background.png"
+              alt="Count Dojo"
+              width={200}
+              height={40}
+              className="h-full w-auto max-h-full object-contain"
+              priority
+            />
+          </div>
 
           <div className="hidden sm:flex items-center gap-8">
             {navLinks.map((link) => (
@@ -552,7 +554,7 @@ export default function Home() {
             </div>
           </div>
         )}
-      </div>
+      </header>
 
       {/* Hero Section */}
       <section className="relative py-16 px-6 sm:px-10 lg:px-12 overflow-hidden" id="top">
