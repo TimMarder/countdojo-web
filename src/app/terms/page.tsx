@@ -5,7 +5,7 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {/* Header */}
-      <header className="sticky top-0 left-0 right-0 z-50 bg-gray-950/95 border-b border-white/5 h-[90px] overflow-hidden backdrop-blur-xl">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-950/95 border-b border-white/5 h-[90px] overflow-hidden backdrop-blur-xl">
         <div className="max-w-6xl mx-auto h-full px-2 w-full flex items-center justify-between">
           <div className="h-full flex items-center overflow-hidden">
             <Link href="/">
@@ -14,7 +14,7 @@ export default function TermsPage() {
                 alt="Count Dojo"
                 width={200}
                 height={40}
-                className="h-[80px] w-auto object-contain"
+                className="h-[150px] w-auto object-cover"
                 priority
               />
             </Link>
