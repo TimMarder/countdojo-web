@@ -158,9 +158,9 @@ const faqList: FAQ[] = [
 ];
 
 const stats = [
-  { value: "12k+", label: "Active students" },
-  { value: "42 days", label: "Average streak" },
-  { value: "2.3M", label: "Decks drilled" },
+  { value: 12000, suffix: "+", label: "Active students" },
+  { value: 42, suffix: " days", label: "Average streak" },
+  { value: 2300000, suffix: "", label: "Decks drilled" },
 ];
 
 const screenshots = [
@@ -170,6 +170,306 @@ const screenshots = [
   { src: "/images/IMG_6362.jpg", alt: "Reference" },
 ];
 
+// ===== COMPONENTS =====
+
+// Page Loader Component
+function PageLoader({ onLoaded }: { onLoaded: () => void }) {
+  const [showCurtain, setShowCurtain] = useState(true);
+  const [curtainExiting, setCurtainExiting] = useState(false);
+
+  useEffect(() => {
+    const loadTimer = setTimeout(() => {
+      setCurtainExiting(true);
+      setTimeout(() => {
+        setShowCurtain(false);
+        onLoaded();
+      }, 800);
+    }, 1500);
+
+    return () => clearTimeout(loadTimer);
+  }, [onLoaded]);
+
+  if (!showCurtain) return null;
+
+  return (
+    <div className={`page-loader ${curtainExiting ? 'curtain-exit' : ''}`}>
+      <Image
+        src="/images/Count Dojo Banner Transparent Background.png"
+        alt="Count Dojo"
+        width={180}
+        height={36}
+        className="loader-logo"
+        priority
+      />
+      <div className="loader-spinner" />
+    </div>
+  );
+}
+
+// Scroll Progress Component
+function ScrollProgress() {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      setProgress(Math.min(scrollPercent, 100));
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <div 
+      className="scroll-progress" 
+      style={{ width: `${progress}%` }}
+    />
+  );
+}
+
+// Background Particles Component
+function BackgroundParticles() {
+  const reduceMotion = usePrefersReducedMotion();
+  const particles = useMemo(() => {
+    if (reduceMotion) return [];
+    return Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      size: Math.random() * 4 + 2,
+      left: Math.random() * 100,
+      duration: Math.random() * 20 + 15,
+      delay: Math.random() * 10,
+      opacity: Math.random() * 0.3 + 0.1,
+    }));
+  }, [reduceMotion]);
+
+  if (reduceMotion) return null;
+
+  return (
+    <div className="particles-container">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="particle"
+          style={{
+            width: p.size,
+            height: p.size,
+            left: `${p.left}%`,
+            animationDuration: `${p.duration}s`,
+            animationDelay: `${p.delay}s`,
+            background: p.id % 3 === 0 
+              ? 'rgba(16, 185, 129, 0.4)' 
+              : p.id % 3 === 1 
+                ? 'rgba(52, 211, 153, 0.3)' 
+                : 'rgba(255, 255, 255, 0.2)',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Text Scramble Effect
+function ScrambleText({ 
+  text, 
+  className = "",
+  duration = 2000,
+  charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?"
+}: { 
+  text: string; 
+  className?: string;
+  duration?: number;
+  charset?: string;
+}) {
+  const [displayText, setDisplayText] = useState(text);
+  const [isScrambling, setIsScrambling] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible || isScrambling) return;
+    
+    setIsScrambling(true);
+    const startTime = Date.now();
+    const originalText = text;
+    const textLength = originalText.length;
+
+    const scramble = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function for smoother reveal
+      const eased = 1 - Math.pow(1 - progress, 3);
+      
+      let result = "";
+      const revealIndex = Math.floor(eased * textLength);
+      
+      for (let i = 0; i < textLength; i++) {
+        if (i < revealIndex) {
+          result += originalText[i];
+        } else {
+          // Random character from charset
+          result += charset[Math.floor(Math.random() * charset.length)];
+        }
+      }
+      
+      setDisplayText(result);
+      
+      if (progress < 1) {
+        requestAnimationFrame(scramble);
+      } else {
+        setDisplayText(originalText);
+        setIsScrambling(false);
+      }
+    };
+
+    requestAnimationFrame(scramble);
+  }, [isVisible, text, duration, charset, isScrambling]);
+
+  return (
+    <span ref={ref} className={className}>
+      {displayText}
+    </span>
+  );
+}
+
+// Magnetic Button Component
+function MagneticButton({ 
+  children, 
+  className = "",
+  ...props 
+}: { 
+  children: React.ReactNode; 
+  className?: string;
+  [key: string]: any;
+}) {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const button = buttonRef.current;
+    if (!button) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = button.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      
+      // Magnetic pull strength
+      const strength = 0.3;
+      button.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
+    };
+
+    const handleMouseLeave = () => {
+      button.style.transform = "translate(0px, 0px)";
+    };
+
+    button.addEventListener("mousemove", handleMouseMove);
+    button.addEventListener("mouseleave", handleMouseLeave);
+
+    return () => {
+      button.removeEventListener("mousemove", handleMouseMove);
+      button.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, []);
+
+  return (
+    <button
+      ref={buttonRef}
+      className={`magnetic-button ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
+// Animated Counter Component
+function AnimatedCounter({ 
+  value, 
+  suffix = "",
+  className = "" 
+}: { 
+  value: number; 
+  suffix?: string;
+  className?: string;
+}) {
+  const [count, setCount] = useState(0);
+  const [isCounting, setIsCounting] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isCounting) {
+          setIsCounting(true);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [isCounting]);
+
+  useEffect(() => {
+    if (!isCounting) return;
+
+    const duration = 2000;
+    const startTime = Date.now();
+    const startValue = 0;
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function (ease-out)
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const currentValue = Math.floor(startValue + (value - startValue) * eased);
+      
+      setCount(currentValue);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [isCounting, value]);
+
+  // Format number with commas
+  const formatted = count.toLocaleString();
+
+  return (
+    <span ref={ref} className={`${className} ${isCounting ? 'stat-number counting' : ''}`}>
+      {formatted}{suffix}
+    </span>
+  );
+}
+
+// Main Page Component
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -179,6 +479,8 @@ export default function Home() {
   const [heroTilt, setHeroTilt] = useState({ x: 0, y: 0 });
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [cursorActive, setCursorActive] = useState(false);
+  const [pageLoaded, setPageLoaded] = useState(false);
+  const [carouselDirection, setCarouselDirection] = useState<'left' | 'right' | null>(null);
 
   const reduceMotion = usePrefersReducedMotion();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -233,24 +535,28 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (!pageLoaded) return;
     const id = setInterval(() => {
+      setCarouselDirection('right');
       setCurrentSlide((prev) => (prev + 1) % screenshots.length);
     }, 6000);
     return () => clearInterval(id);
-  }, []);
+  }, [pageLoaded]);
 
   const nextSlide = () => {
     if (isAnimating) return;
+    setCarouselDirection('right');
     setIsAnimating(true);
     setCurrentSlide((prev) => (prev + 1) % screenshots.length);
-    setTimeout(() => setIsAnimating(false), 450);
+    setTimeout(() => setIsAnimating(false), 600);
   };
 
   const prevSlide = () => {
     if (isAnimating) return;
+    setCarouselDirection('left');
     setIsAnimating(true);
     setCurrentSlide((prev) => (prev - 1 + screenshots.length) % screenshots.length);
-    setTimeout(() => setIsAnimating(false), 450);
+    setTimeout(() => setIsAnimating(false), 600);
   };
 
   const heroParallax = useMemo(() => (reduceMotion ? 0 : Math.min(scrollY * 0.12, 120)), [scrollY, reduceMotion]);
@@ -266,8 +572,22 @@ export default function Home() {
 
   const resetTilt = () => setHeroTilt({ x: 0, y: 0 });
 
+  const handlePageLoad = useCallback(() => {
+    setPageLoaded(true);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-950 text-white selection:bg-emerald-500 selection:text-white overflow-hidden">
+      {/* Page Loader */}
+      <PageLoader onLoaded={handlePageLoad} />
+      
+      {/* Scroll Progress */}
+      <ScrollProgress />
+      
+      {/* Background Particles */}
+      <BackgroundParticles />
+
+      {/* Sticky Header */}
       <div
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
           navHidden ? "-translate-y-full" : "translate-y-0"
@@ -333,6 +653,7 @@ export default function Home() {
         )}
       </div>
 
+      {/* Hero Section */}
       <section className="relative pt-28 pb-32 px-6 sm:px-10 lg:px-12 overflow-hidden" id="top">
         <div className="absolute inset-0 rounded-[48px] sm:rounded-[64px] bg-gray-900/70 border border-white/5 mx-3 sm:mx-6" />
         <div className="absolute inset-0">
@@ -368,8 +689,10 @@ export default function Home() {
             <p className="text-base text-gray-400 mb-10 max-w-lg leading-relaxed">
               The world&apos;s first gamified card counting education app. Master the art of advantage play from absolute beginner to casino-ready.
             </p>
+            
+            {/* Magnetic Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <a
+              <MagneticButton
                 href="#"
                 className="group relative overflow-hidden bg-emerald-500 text-gray-950 px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-3 shadow-lg shadow-emerald-500/30"
               >
@@ -378,8 +701,8 @@ export default function Home() {
                   <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.21-1.96 1.07-3.11-1.05.05-2.31.72-3.06 1.61-.68.79-1.26 2.08-1.1 3.23 1.18.09 2.39-.59 3.09-1.73z" />
                 </svg>
                 Download on App Store
-              </a>
-              <a
+              </MagneticButton>
+              <MagneticButton
                 href="#"
                 className="group relative overflow-hidden bg-gray-900 text-white px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-3 border border-white/10"
               >
@@ -388,19 +711,23 @@ export default function Home() {
                   <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" />
                 </svg>
                 Get it on Google Play
-              </a>
+              </MagneticButton>
             </div>
 
+            {/* Stats with Animated Counters */}
             <div className="grid grid-cols-3 gap-4 mt-12">
-              {stats.map((stat) => (
-                <div key={stat.label} className="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur">
-                  <p className="text-2xl font-semibold text-white">{stat.value}</p>
+              {stats.map((stat, index) => (
+                <div key={stat.label} className="glass-card glass-card-hover p-4 rounded-2xl">
+                  <p className="text-2xl font-semibold text-white">
+                    <AnimatedCounter value={stat.value} suffix={stat.suffix} />
+                  </p>
                   <p className="text-xs uppercase tracking-widest text-gray-400">{stat.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
+          {/* Phone Mockup with 3D Tilt & Image Zoom */}
           <div
             className="relative"
             onMouseMove={handleTilt}
@@ -419,15 +746,19 @@ export default function Home() {
             >
               <div className="absolute inset-x-10 -top-8 h-32 bg-gradient-to-r from-emerald-500/40 to-transparent blur-3xl" />
               <div className={`relative bg-gray-950 rounded-[28px] p-2 border border-white/5 shadow-inner transition-all duration-500 ${isAnimating ? "scale-[.97] opacity-70" : "scale-100 opacity-100"}`}>
-                <Image
-                  src={screenshots[currentSlide].src}
-                  alt={screenshots[currentSlide].alt}
-                  width={360}
-                  height={720}
-                  className="rounded-3xl w-full h-auto"
-                  priority
-                />
+                {/* Screenshot with Zoom Effect */}
+                <div className="screenshot-zoom-container rounded-2xl overflow-hidden">
+                  <Image
+                    src={screenshots[currentSlide].src}
+                    alt={screenshots[currentSlide].alt}
+                    width={360}
+                    height={720}
+                    className="rounded-2xl w-full h-auto"
+                    priority
+                  />
+                </div>
               </div>
+              {/* Carousel Controls */}
               <div className="flex items-center gap-3 justify-between mt-6">
                 <button
                   onClick={prevSlide}
@@ -471,13 +802,16 @@ export default function Home() {
         </a>
       </section>
 
+      {/* Features Section with Glass Morphism */}
       <section id="features" className="relative px-6 py-24 bg-gray-950">
         <div className="absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
         <div className="max-w-5xl mx-auto relative">
           <Reveal>
             <div className="text-center mb-16">
               <p className="text-sm uppercase tracking-[0.4em] text-emerald-400 mb-3">Curriculum</p>
-              <h2 className="text-3xl font-bold mb-3">Everything You Need</h2>
+              <h2 className="text-3xl font-bold mb-3">
+                <ScrambleText text="Everything You Need" />
+              </h2>
               <p className="text-gray-500 max-w-xl mx-auto">
                 The only A to Z platform that teaches card counting from beginner to advanced.
               </p>
@@ -492,13 +826,16 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Screenshots Section */}
       <section id="screenshots" className="relative px-6 py-24">
         <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-emerald-500/10 to-transparent pointer-events-none" />
         <div className="max-w-5xl mx-auto">
           <Reveal>
             <div className="text-center mb-12">
               <p className="text-sm uppercase tracking-[0.4em] text-emerald-400 mb-3">Product tour</p>
-              <h2 className="text-3xl font-bold">See It In Action</h2>
+              <h2 className="text-3xl font-bold">
+                <ScrambleText text="See It In Action" />
+              </h2>
               <p className="text-gray-500">Beautiful, intuitive design</p>
             </div>
           </Reveal>
@@ -506,15 +843,18 @@ export default function Home() {
           <div className="relative max-w-md mx-auto">
             <div className="absolute -inset-8 bg-gradient-to-r from-emerald-500/20 to-transparent blur-3xl" style={{ transform: `translateY(${accentDrift * 0.5}px)` }} />
             <Reveal>
-              <div className="relative bg-gray-900 rounded-[32px] p-6 border border-white/10 shadow-[0_30px_120px_rgba(0,0,0,0.7)]">
+              <div className="glass-card relative rounded-[32px] p-6 shadow-[0_30px_120px_rgba(0,0,0,0.7)]">
                 <div className={`transition-all duration-500 ease-out ${isAnimating ? "scale-95 opacity-50" : "scale-100 opacity-100"}`}>
-                  <Image
-                    src={screenshots[currentSlide].src}
-                    alt={screenshots[currentSlide].alt}
-                    width={360}
-                    height={720}
-                    className="rounded-[26px] w-full h-auto"
-                  />
+                  {/* Screenshot with Zoom */}
+                  <div className="screenshot-zoom-container rounded-[26px] overflow-hidden">
+                    <Image
+                      src={screenshots[currentSlide].src}
+                      alt={screenshots[currentSlide].alt}
+                      width={360}
+                      height={720}
+                      className="rounded-[26px] w-full h-auto"
+                    />
+                  </div>
                 </div>
                 <div className="flex justify-center items-center gap-4 mt-6">
                   <button
@@ -550,6 +890,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
       <section className="px-6 py-24 bg-gray-950/70 border-y border-white/5 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.2),_transparent_55%)] opacity-60" />
         <div className="max-w-5xl mx-auto relative">
@@ -564,6 +905,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FAQ Section */}
       <section id="faq" className="px-6 py-24 relative">
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-emerald-500/10 to-transparent" />
         <div className="max-w-2xl mx-auto relative">
@@ -578,6 +920,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* CTA Section */}
       <section className="px-6 py-20">
         <div className="max-w-4xl mx-auto text-center bg-gradient-to-br from-emerald-600 via-emerald-500 to-emerald-700 rounded-[40px] p-10 shadow-[0_30px_100px_rgba(16,185,129,0.35)] relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.2),_transparent_55%)]" />
@@ -590,18 +933,25 @@ export default function Home() {
             </Reveal>
             <Reveal delay={120}>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="#" className="bg-white text-emerald-600 px-8 py-3.5 rounded-2xl font-medium text-sm hover:bg-emerald-50 transition-all hover:-translate-y-0.5 shadow-lg">
+                <MagneticButton
+                  href="#"
+                  className="bg-white text-emerald-600 px-8 py-3.5 rounded-2xl font-medium text-sm hover:bg-emerald-50 transition-all hover:-translate-y-0.5 shadow-lg"
+                >
                   Download on App Store
-                </a>
-                <a href="#" className="bg-emerald-800/70 text-white px-8 py-3.5 rounded-2xl font-medium text-sm hover:bg-emerald-900/80 transition-all hover:-translate-y-0.5 border border-white/20">
+                </MagneticButton>
+                <MagneticButton
+                  href="#"
+                  className="bg-emerald-800/70 text-white px-8 py-3.5 rounded-2xl font-medium text-sm hover:bg-emerald-900/80 transition-all hover:-translate-y-0.5 border border-white/20"
+                >
                   Get it on Google Play
-                </a>
+                </MagneticButton>
               </div>
             </Reveal>
           </div>
         </div>
       </section>
 
+      {/* Footer */}
       <footer className="px-6 py-8 bg-gray-950 border-t border-white/5">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <Image
@@ -626,6 +976,7 @@ export default function Home() {
         </div>
       </footer>
 
+      {/* Custom Cursor */}
       <div
         className={`pointer-events-none fixed top-0 left-0 z-[80] hidden md:block transition-opacity duration-300 ${cursorActive ? "opacity-100" : "opacity-0"}`}
         style={{ transform: `translate3d(${cursorPos.x - 32}px, ${cursorPos.y - 32}px, 0)` }}
@@ -636,10 +987,11 @@ export default function Home() {
   );
 }
 
+// Feature Card with Glass Morphism
 function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
   return (
     <Reveal delay={index * 70}>
-      <div className="relative bg-gray-900/70 rounded-2xl p-5 border border-white/5 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-400/40 overflow-hidden group">
+      <div className="glass-card glass-card-hover rounded-2xl p-5 overflow-hidden group">
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-emerald-500/10 to-transparent" />
         <div className="relative">
           <div className="text-emerald-400 mb-3 group-hover:scale-110 transition-transform duration-300">{feature.icon}</div>
@@ -651,10 +1003,11 @@ function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
   );
 }
 
+// Testimonial Card with Glass Morphism
 function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; index: number }) {
   return (
     <Reveal delay={index * 80}>
-      <div className="group bg-gray-900/70 rounded-2xl p-5 border border-white/5 relative overflow-hidden">
+      <div className="glass-card group rounded-2xl p-5 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         <p className="text-gray-300 mb-4 leading-relaxed min-h-[96px]">&ldquo;{testimonial.quote}&rdquo;</p>
         <p className="text-emerald-400 font-medium text-sm">— {testimonial.author}</p>
@@ -664,6 +1017,7 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
   );
 }
 
+// FAQ Item Component
 function FAQItem({ faq, index }: { faq: FAQ; index: number }) {
   const [open, setOpen] = useState(index === 0);
 
@@ -686,6 +1040,7 @@ function FAQItem({ faq, index }: { faq: FAQ; index: number }) {
   );
 }
 
+// Reveal Animation Component
 function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -721,6 +1076,7 @@ function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
   );
 }
 
+// Reduced Motion Hook
 function usePrefersReducedMotion() {
   const subscribe = useCallback((callback: () => void) => {
     if (typeof window === "undefined") {

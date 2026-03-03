@@ -31,6 +31,164 @@ body {
   overflow-x: hidden;
 }
 
+/* ===== Page Loading Animation ===== */
+@keyframes pageReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes curtainUp {
+  0% {
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+  50% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+  51% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  100% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+}
+
+@keyframes curtainReveal {
+  0% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  50% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+}
+
+.page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #020617;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.page-loader.curtain-exit {
+  animation: curtainReveal 0.8s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+}
+
+.loader-logo {
+  width: 120px;
+  height: auto;
+  animation: pageReveal 0.6s ease-out;
+}
+
+.loader-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(16, 185, 129, 0.2);
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== Scroll Progress Bar ===== */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #34d399, #10b981);
+  background-size: 200% 100%;
+  z-index: 9998;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.scroll-progress::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 10px #34d399;
+}
+
+/* ===== Background Particles ===== */
+.particles-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: floatParticle linear infinite;
+}
+
+@keyframes floatParticle {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  90% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* ===== Text Scramble Effect ===== */
+.scramble-text {
+  display: inline-block;
+}
+
+.scramble-char {
+  display: inline-block;
+  transition: transform 0.1s ease;
+}
+
+/* ===== Gradient Shift ===== */
 @keyframes gradientShift {
   0% {
     background-position: 0% 50%;
@@ -43,6 +201,7 @@ body {
   }
 }
 
+/* ===== Float Animation ===== */
 @keyframes floatSoft {
   0% {
     transform: translateY(0px);
@@ -55,6 +214,7 @@ body {
   }
 }
 
+/* ===== Pulse Soft ===== */
 @keyframes pulseSoft {
   0% {
     transform: scale(0.9);
@@ -70,6 +230,89 @@ body {
   }
 }
 
+/* ===== Magnetic Button ===== */
+.magnetic-button {
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ===== Image Hover Zoom ===== */
+.screenshot-zoom-container {
+  overflow: hidden;
+}
+
+.screenshot-zoom-container img {
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.screenshot-zoom-container:hover img {
+  transform: scale(1.08);
+}
+
+/* ===== Stats Counter Animation ===== */
+.stat-number {
+  transition: transform 0.3s ease;
+}
+
+.stat-number.counting {
+  animation: countPulse 0.3s ease;
+}
+
+@keyframes countPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* ===== Glass Morphism Enhancements ===== */
+.glass-card {
+  background: rgba(3, 7, 18, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.glass-card-hover {
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.glass-card-hover:hover {
+  background: rgba(3, 7, 18, 0.8);
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(16, 185, 129, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(-4px);
+}
+
+/* ===== Carousel Momentum ===== */
+.carousel-slide {
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.6s ease;
+}
+
+.carousel-slide.enter-left {
+  transform: translateX(-40px);
+  opacity: 0;
+}
+
+.carousel-slide.enter-right {
+  transform: translateX(40px);
+  opacity: 0;
+}
+
+.carousel-slide.active {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* ===== Animations ===== */
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradientShift 14s ease infinite;
@@ -83,6 +326,7 @@ body {
   animation: pulseSoft 3.2s ease-in-out infinite;
 }
 
+/* ===== Utilities ===== */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
