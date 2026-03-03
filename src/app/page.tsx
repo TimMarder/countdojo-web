@@ -714,8 +714,8 @@ export default function Home() {
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Logo Column */}
-            <div>
-              <div className="relative h-32 w-[600px]">
+            <div className="col-span-1 md:col-span-3">
+              <div className="relative h-64 w-[1200px] max-w-full">
                 <Image
                   src="/images/Count Dojo Banner Transparent Background.png"
                   alt="Count Dojo"
@@ -723,9 +723,6 @@ export default function Home() {
                   className="object-contain object-left"
                 />
               </div>
-              <p className="text-gray-400 text-sm mt-3">
-                Master the art of card counting.
-              </p>
             </div>
 
             {/* Quick Links */}
