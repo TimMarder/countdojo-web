@@ -353,6 +353,12 @@ body {
   transform: translateY(-2px) rotate(1deg);
 }
 
+/* ===== Footer Links ===== */
+footer .nav-link {
+  padding: 2px 4px;
+  margin: -2px -4px;
+}
+
 /* ===== Utilities ===== */
 @layer utilities {
   .text-balance {
