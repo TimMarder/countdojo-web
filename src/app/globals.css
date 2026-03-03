@@ -98,7 +98,8 @@ body {
 }
 
 .loader-logo {
-  width: 120px;
+  width: 600px;
+  max-width: 80vw;
   height: auto;
   animation: pageReveal 0.6s ease-out;
 }

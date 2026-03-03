@@ -402,7 +402,6 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [navHidden, setNavHidden] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [cursorActive, setCursorActive] = useState(false);
@@ -411,7 +410,6 @@ export default function Home() {
 
   const reduceMotion = usePrefersReducedMotion();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const lastScroll = useRef(0);
 
   useEffect(() => {
     if (reduceMotion) {
@@ -425,15 +423,7 @@ export default function Home() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const current = window.scrollY;
-      setScrollY(current);
-
-      if (Math.abs(current - lastScroll.current) > 6) {
-        const shouldHide = current > lastScroll.current && current > 120;
-        setNavHidden(shouldHide);
-      }
-
-      lastScroll.current = current;
+      setScrollY(window.scrollY);
     };
 
     handleScroll();
@@ -504,15 +494,9 @@ export default function Home() {
       {/* Background Particles */}
       <BackgroundParticles />
 
-      {/* Sticky Header */}
+      {/* Header - sits above hero, not overlapping */}
       <div
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-          navHidden ? "-translate-y-full" : "translate-y-0"
-        } ${
-          scrollY > 24
-            ? "bg-gray-950/85 border-b border-white/5 backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.55)]"
-            : "bg-transparent"
-        }`}
+        className={`relative z-50 bg-gray-950 border-b border-white/5 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]`}
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <Image
@@ -520,7 +504,7 @@ export default function Home() {
             alt="Count Dojo"
             width={200}
             height={40}
-            className="h-auto w-64 sm:w-80"
+            className="h-auto w-36 sm:w-44"
             priority
           />
 
@@ -553,7 +537,7 @@ export default function Home() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="sm:hidden border-t border-white/5 bg-gray-950/95 backdrop-blur-xl">
+          <div className="sm:hidden border-t border-white/5 bg-gray-950">
             <div className="px-4 py-3 space-y-2">
               {navLinks.map((link) => (
                 <a
@@ -571,7 +555,7 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-28 pb-32 px-6 sm:px-10 lg:px-12 overflow-hidden" id="top">
+      <section className="relative py-16 px-6 sm:px-10 lg:px-12 overflow-hidden" id="top">
         <div className="absolute inset-0 rounded-[48px] sm:rounded-[64px] bg-gray-900/70 border border-white/5 mx-3 sm:mx-6" />
         <div className="absolute inset-0">
           <video
