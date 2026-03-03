@@ -496,15 +496,15 @@ export default function Home() {
 
       {/* Header - sits above hero, not overlapping */}
       <div
-        className={`relative z-50 bg-gray-950 border-b border-white/5 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]`}
+        className={`relative z-50 bg-gray-950 border-b border-white/5 h-14 flex items-center`}
       >
-        <div className="max-w-6xl mx-auto px-2 py-px flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-2 w-full flex items-center justify-between">
           <Image
             src="/images/Count Dojo Banner Transparent Background.png"
             alt="Count Dojo"
             width={200}
             height={40}
-            className="h-auto w-60 sm:w-68"
+            className="h-10 w-auto max-w-[50%] object-contain"
             priority
           />
 
