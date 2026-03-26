@@ -306,47 +306,64 @@ function HeadingEntry({ children, delay = 0 }: { children: React.ReactNode; dela
 }
 
 // Magnetic Button Component
-function MagneticButton({ 
-  children, 
+function MagneticButton({
+  children,
   className = "",
-  ...props 
-}: { 
-  children: React.ReactNode; 
+  href,
+  ...props
+}: {
+  children: React.ReactNode;
   className?: string;
+  href?: string;
   [key: string]: any;
 }) {
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const button = buttonRef.current;
-    if (!button) return;
+    const el = ref.current;
+    if (!el) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      const rect = button.getBoundingClientRect();
+      const rect = el.getBoundingClientRect();
       const x = e.clientX - rect.left - rect.width / 2;
       const y = e.clientY - rect.top - rect.height / 2;
-      
+
       // Magnetic pull strength
       const strength = 0.3;
-      button.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
+      el.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
     };
 
     const handleMouseLeave = () => {
-      button.style.transform = "translate(0px, 0px)";
+      el.style.transform = "translate(0px, 0px)";
     };
 
-    button.addEventListener("mousemove", handleMouseMove);
-    button.addEventListener("mouseleave", handleMouseLeave);
+    el.addEventListener("mousemove", handleMouseMove);
+    el.addEventListener("mouseleave", handleMouseLeave);
 
     return () => {
-      button.removeEventListener("mousemove", handleMouseMove);
-      button.removeEventListener("mouseleave", handleMouseLeave);
+      el.removeEventListener("mousemove", handleMouseMove);
+      el.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, []);
 
+  if (href && href !== "#") {
+    return (
+      <a
+        ref={ref as React.RefObject<HTMLAnchorElement>}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`magnetic-button inline-block ${className}`}
+        {...props}
+      >
+        {children}
+      </a>
+    );
+  }
+
   return (
     <button
-      ref={buttonRef}
+      ref={ref as React.RefObject<HTMLButtonElement>}
       className={`magnetic-button ${className}`}
       {...props}
     >
