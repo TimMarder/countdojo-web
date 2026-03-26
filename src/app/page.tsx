@@ -158,10 +158,16 @@ const faqList: FAQ[] = [
 ];
 
 const screenshots = [
-  { src: "/images/IMG_6359.jpg", alt: "Skill Tree" },
-  { src: "/images/IMG_6360.jpg", alt: "Practice" },
-  { src: "/images/IMG_6361.jpg", alt: "Profile" },
-  { src: "/images/IMG_6362.jpg", alt: "Reference" },
+  { src: "/images/IMG_6959.PNG", alt: "Skill Tree" },
+  { src: "/images/IMG_6960.PNG", alt: "Practice" },
+  { src: "/images/IMG_6961.PNG", alt: "Drills" },
+  { src: "/images/IMG_6962.PNG", alt: "Counting" },
+  { src: "/images/IMG_6963.PNG", alt: "Reference" },
+  { src: "/images/IMG_6964.PNG", alt: "Casino Sim" },
+  { src: "/images/IMG_6965.PNG", alt: "Simulator" },
+  { src: "/images/IMG_6966.PNG", alt: "Profile" },
+  { src: "/images/IMG_6967.PNG", alt: "Settings" },
+  { src: "/images/IMG_6968.PNG", alt: "Stats" },
 ];
 
 // ===== COMPONENTS =====
@@ -511,10 +517,6 @@ export default function Home() {
 
         <div className="relative z-10 max-w-6xl mx-auto grid lg:grid-cols-[1fr,0.9fr] gap-12 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-medium mb-6 backdrop-blur">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Now available for iOS and Android
-            </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-5 tracking-tight text-balance">
               <span className="bg-gradient-to-r from-white via-emerald-100 to-gray-400 bg-clip-text text-transparent animate-gradient">Train to Beat the Casino</span>
             </h1>
@@ -526,7 +528,7 @@ export default function Home() {
             {/* Magnetic Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <MagneticButton
-                href="#"
+                href="https://apps.apple.com/us/app/count-dojo-bj-card-counting/id6760961014"
                 className="group relative overflow-hidden bg-emerald-500 text-gray-950 px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-3 shadow-lg shadow-emerald-500/30"
               >
                 <span className="absolute inset-0 bg-white/30 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -535,16 +537,18 @@ export default function Home() {
                 </svg>
                 Download on App Store
               </MagneticButton>
-              <MagneticButton
-                href="#"
-                className="group relative overflow-hidden bg-gray-900 text-white px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-3 border border-white/10"
-              >
-                <span className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[0%] transition-transform duration-500" />
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" />
-                </svg>
-                Get it on Google Play
-              </MagneticButton>
+              <div className="relative">
+                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 bg-amber-500 text-gray-950 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-lg">Coming Soon</span>
+                <MagneticButton
+                  href="#"
+                  className="group relative overflow-hidden bg-gray-900 text-white/50 px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-3 border border-white/10 cursor-default"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" />
+                  </svg>
+                  Get it on Google Play
+                </MagneticButton>
+              </div>
             </div>
 
           </div>
@@ -692,17 +696,20 @@ export default function Home() {
             <Reveal delay={120}>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <MagneticButton
-                  href="#"
+                  href="https://apps.apple.com/us/app/count-dojo-bj-card-counting/id6760961014"
                   className="bg-white text-emerald-600 px-8 py-3.5 rounded-2xl font-medium text-sm hover:bg-emerald-50 transition-all hover:-translate-y-0.5 shadow-lg"
                 >
                   Download on App Store
                 </MagneticButton>
-                <MagneticButton
-                  href="#"
-                  className="bg-emerald-800/70 text-white px-8 py-3.5 rounded-2xl font-medium text-sm hover:bg-emerald-900/80 transition-all hover:-translate-y-0.5 border border-white/20"
-                >
-                  Get it on Google Play
-                </MagneticButton>
+                <div className="relative">
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 bg-amber-500 text-gray-950 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-lg">Coming Soon</span>
+                  <MagneticButton
+                    href="#"
+                    className="bg-emerald-800/70 text-white/50 px-8 py-3.5 rounded-2xl font-medium text-sm transition-all border border-white/20 cursor-default"
+                  >
+                    Get it on Google Play
+                  </MagneticButton>
+                </div>
               </div>
             </Reveal>
           </div>
