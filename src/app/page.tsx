@@ -353,7 +353,7 @@ function MagneticButton({
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className={`magnetic-button inline-block ${className}`}
+        className={`magnetic-button ${className}`}
         {...props}
       >
         {children}
