@@ -139,23 +139,19 @@ const testimonialList: Testimonial[] = [
   {
     quote:
       "I went from knowing nothing about card counting to being able to count down a deck in 30 seconds. This app is legit.",
-    author: "Mike R.",
-    detail: "CFA, recreational player",
+    author: "Michael S.",
   },
   {
-    quote: "The gamification keeps me coming back every day. I\u2019ve a 47 day streak now. Better than Duolingo!",
-    author: "Sarah L.",
-    detail: "Former casino dealer",
+    quote: "Most apps just assume you already know how to count and just give you drills with no actual education. Count Dojo actually starts from zero, and if you really don\u2019t need it, you have an option to advance faster.",
+    author: "Ariel M.",
   },
   {
     quote: "Finally, a structured way to learn card counting. No more YouTube videos or books.",
-    author: "James T.",
-    detail: "Tech founder",
+    author: "Brian Z.",
   },
   {
     quote: "Went to Vegas last month and felt confident at the tables for the first time.",
-    author: "David K.",
-    detail: "AP team member",
+    author: "Tyler V.",
   },
 ];
 
