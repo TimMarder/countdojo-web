@@ -31,15 +31,21 @@ const navLinks = [
 ];
 
 const marqueeItems = [
-  "10,000+ Downloads",
-  "4.9\u2605 App Store Rating",
+  "100+ Downloads",
+  "5.0\u2605 App Store Rating",
   "50+ Lessons & Drills",
   "#1 Card Counting App",
   "Hi-Lo \u00b7 KO \u00b7 Omega II",
   "Casino Simulator",
-  "30-Day Learning Path",
+  "XP, Streaks & Achievements",
+  "Works Offline",
+  "No Math Skills Required",
+  "Free to Start",
+  "Beginner to Casino-Ready",
   "Gamified Progression",
 ];
+
+const suits = ["\u2660", "\u2665", "\u2666", "\u2663"];
 
 const featureList: Feature[] = [
   {
@@ -604,7 +610,7 @@ export default function Home() {
         <div className="marquee-track">
           {[...marqueeItems, ...marqueeItems, ...marqueeItems].map((item, i) => (
             <span key={i} className="flex items-center gap-3 text-sm whitespace-nowrap text-gray-500">
-              <span className="text-emerald-600 text-xs">{"\u2666"}</span>
+              <span className="text-emerald-600 text-xs">{suits[i % 4]}</span>
               {item}
             </span>
           ))}
