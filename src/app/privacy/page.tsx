@@ -90,6 +90,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-emerald-400">8. Your Rights and Choices</h2>
             <p className="text-gray-300">You may access, correct, delete, or opt-out of promotional communications. Since your data is stored locally, you can delete it by uninstalling the App.</p>
+            <p className="text-gray-300 mt-4">To delete your account and all associated data, please visit our <Link href="/delete-account" className="text-emerald-400 hover:text-emerald-300 transition-colors">account deletion page</Link>.</p>
           </section>
 
           <section>
