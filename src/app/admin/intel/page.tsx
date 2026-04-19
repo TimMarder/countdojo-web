@@ -10,6 +10,8 @@ type IntelStatus = "pending" | "approved" | "rejected";
 type IntelSubmission = {
   id: string;
   casino_id: string | null;
+  submitted_by: string | null;
+  submitter_email: string | null;
   type: IntelType;
   content: Record<string, unknown> | string;
   upvotes: number;
@@ -382,8 +384,12 @@ export default function IntelAdminPage() {
                       <h3 className="text-lg font-semibold text-slate-50">
                         {item.casinos?.name ?? "Unknown Casino"}
                       </h3>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {formatDate(item.created_at)}
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        by {item.submitted_by || "Anonymous"}
+                        {item.submitter_email && (
+                          <span className="text-slate-500"> ({item.submitter_email})</span>
+                        )}
+                        {" "}&middot; {formatDate(item.created_at)}
                       </p>
                     </div>
                     <span
