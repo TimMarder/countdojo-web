@@ -23,6 +23,8 @@ type FAQ = {
 
 const APP_STORE_URL =
   "https://apps.apple.com/us/app/count-dojo-bj-card-counting/id6760961014";
+const GOOGLE_PLAY_URL =
+  "https://play.google.com/store/apps/details?id=com.countdojo.app&utm_source=na_Med";
 
 const navLinks = [
   { label: "Features", href: "#features" },
@@ -574,18 +576,16 @@ export default function Home() {
                 </svg>
                 Download on App Store
               </MagneticButton>
-              <div className="relative">
-                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 bg-amber-500 text-gray-950 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-lg">Coming Soon</span>
-                <MagneticButton
-                  href="#"
-                  className="group relative overflow-hidden bg-gray-900 text-white/50 px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-3 border border-white/10 cursor-default"
-                >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" />
-                  </svg>
-                  Get it on Google Play
-                </MagneticButton>
-              </div>
+              <MagneticButton
+                href={GOOGLE_PLAY_URL}
+                className="group relative overflow-hidden bg-gray-900 text-white px-7 py-3.5 rounded-2xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-3 border border-white/10"
+              >
+                <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" />
+                </svg>
+                Get it on Google Play
+              </MagneticButton>
             </div>
 
           </div>
@@ -776,15 +776,12 @@ export default function Home() {
                 >
                   Download on App Store
                 </MagneticButton>
-                <div className="relative">
-                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 bg-amber-500 text-gray-950 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-lg">Coming Soon</span>
-                  <MagneticButton
-                    href="#"
-                    className="bg-emerald-800/70 text-white/50 px-8 py-3.5 rounded-2xl font-medium text-sm transition-all border border-white/20 cursor-default"
-                  >
-                    Get it on Google Play
-                  </MagneticButton>
-                </div>
+                <MagneticButton
+                  href={GOOGLE_PLAY_URL}
+                  className="bg-emerald-800 text-white px-8 py-3.5 rounded-2xl font-medium text-sm transition-all hover:-translate-y-0.5 hover:bg-emerald-900 shadow-lg border border-white/20 flex items-center justify-center gap-3"
+                >
+                  Get it on Google Play
+                </MagneticButton>
               </div>
             </Reveal>
           </div>
