@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SiteHeader } from "./_components/SiteHeader";
 import { SiteFooter } from "./_components/SiteFooter";
 
@@ -15,7 +15,9 @@ type Unit = {
   title: string;
   synopsis: string;
   lessons: number;
+  sideBranches?: number;
   tier: "Free" | "Free → Premium" | "Premium";
+  samples: string[];
 };
 
 type CountingSystem = {
@@ -23,6 +25,7 @@ type CountingSystem = {
   values: string;
   note: string;
   rank: string;
+  level: string;
 };
 
 type Belt = {
@@ -35,8 +38,13 @@ type Belt = {
 
 type Testimonial = { quote: string; author: string };
 type FaqItem = { q: string; a: string };
-type DrillCategory = { label: string; drills: string[] };
+type DrillCategory = { label: string; drills: { name: string; note?: string }[] };
 type Screenshot = { src: string; alt: string };
+type CasinoPreset = { name: string; decks: string; rules: string[]; pen: string };
+type ReferenceTool = { label: string; desc: string };
+type AchievementCat = { label: string; count: number; examples: string[] };
+type EdgeRow = { tc: string; edge: number; note: string };
+type ComparisonRow = { approach: string; gaps: string; emphasis?: boolean };
 
 const proofStats = [
   { number: "6", label: "Units" },
@@ -44,7 +52,7 @@ const proofStats = [
   { number: "19", label: "Drill types" },
   { number: "7", label: "Counting systems" },
   { number: "65", label: "Achievements" },
-  { number: "20", label: "Belt levels" },
+  { number: "120+", label: "Glossary terms" },
 ];
 
 const curriculum: Unit[] = [
@@ -52,91 +60,134 @@ const curriculum: Unit[] = [
     numeral: "I",
     title: "Blackjack Foundations",
     synopsis:
-      "Card values, hard and soft totals, pairs. Basic strategy mastery to the boss test.",
-    lessons: 8,
+      "Card values, hard and soft totals, pairs. Basic strategy mastered to the boss test.",
+    lessons: 17,
+    sideBranches: 2,
     tier: "Free",
+    samples: [
+      "1.1 · The Real Objective",
+      "1.3 · Hard Totals Fundamentals",
+      "1.5 · Pair Splitting — the Decision Tree",
+    ],
   },
   {
     numeral: "II",
     title: "Learning to Count",
     synopsis:
-      "Hi-Lo, running count, deck counting, handling distractions. Optional side branches on history and alternative systems.",
-    lessons: 7,
+      "Hi-Lo, running count, full-shoe endurance. Side branches on history, alternative systems, and the math behind counting.",
+    lessons: 10,
+    sideBranches: 3,
     tier: "Free → Premium",
+    samples: [
+      "2.1 · Why Blackjack Can Be Beaten",
+      "2.3 · The Hi-Lo System",
+      "2.5 · Counting Through a Full Shoe",
+    ],
   },
   {
     numeral: "III",
     title: "True Count & Bet Sizing",
     synopsis:
-      "True count conversion, bet spreads from 1-8 to 1-16, bankroll mechanics and risk of ruin.",
-    lessons: 3,
+      "The TC formula, bet spreads from 1-4 to 1-20, linear versus Kelly, bankroll and risk of ruin.",
+    lessons: 12,
+    sideBranches: 2,
     tier: "Premium",
+    samples: [
+      "3.1 · The True Count Formula",
+      "3.5 · Linear vs Kelly Sizing",
+      "3.9 · Risk of Ruin",
+    ],
   },
   {
     numeral: "IV",
     title: "Playing Deviations",
     synopsis:
-      "The Illustrious 18 and Fab 4 late surrenders, with an extended-deviations module for the committed.",
-    lessons: 5,
+      "The Illustrious 18 and Fab 4 surrenders, extended indices, insurance — the number-one deviation.",
+    lessons: 11,
     tier: "Premium",
+    samples: [
+      "4.2 · Insurance — the #1 Deviation",
+      "4.4 · The Big Four Standing Plays",
+      "4.8 · The Fab 4 Surrenders",
+    ],
   },
   {
     numeral: "V",
     title: "Casino Readiness",
     synopsis:
-      "Game selection, cover play, heat and backoffs, how to stay welcome at the tables.",
-    lessons: 5,
+      "Game selection, penetration, table scouting. Cover play, heat, backoffs. How to stay welcome.",
+    lessons: 11,
     tier: "Premium",
+    samples: [
+      "5.1 · Game Selection Fundamentals",
+      "5.6 · Disguise and Cover",
+      "5.7 · Heat Management",
+    ],
   },
   {
     numeral: "VI",
     title: "Advanced Advantage Play",
     synopsis:
-      "Hole carding, shuffle tracking overview, side bets, team play, and an honest look at comp hustling.",
-    lessons: 6,
+      "Extended deviations, shuffle tracking overview, team play, side bets, hole carding, comp hustling.",
+    lessons: 4,
+    sideBranches: 5,
     tier: "Premium",
+    samples: [
+      "6.1 · Extended Deviations",
+      "SB-6A · Shuffle Tracking",
+      "SB-6C · Team Play",
+    ],
   },
 ];
 
 const drillCategories: DrillCategory[] = [
   {
     label: "Basic Strategy",
-    drills: ["Hard totals", "Soft totals", "Pairs", "Mixed", "Speed strategy"],
+    drills: [
+      { name: "Hard totals" },
+      { name: "Soft totals" },
+      { name: "Pairs" },
+      { name: "Mixed" },
+      { name: "Speed strategy", note: "Timed · 2–4s per hand" },
+    ],
   },
   {
     label: "Counting Foundations",
     drills: [
-      "Card flash",
-      "Single-hand count",
-      "Pair cancellation",
-      "Running count",
-      "Count interruptions",
-      "Speed counting",
-      "Deck countdown",
+      { name: "Card flash" },
+      { name: "Single-hand count" },
+      { name: "Pair cancellation" },
+      { name: "Running count" },
+      { name: "Count interruptions" },
+      { name: "Speed counting", note: "Timed · burst count 6–10 cards" },
+      { name: "Deck countdown", note: "Legend · under 20 seconds" },
     ],
   },
   {
     label: "True Count & Betting",
     drills: [
-      "True count conversion",
-      "Deck estimation",
-      "True count flow",
-      "Bet sizing",
-      "Realistic chips",
+      { name: "True count conversion" },
+      { name: "Deck estimation" },
+      { name: "True count flow" },
+      { name: "Bet sizing" },
+      { name: "Realistic chips" },
     ],
   },
   {
     label: "Strategy & Deviations",
     drills: [
-      "Illustrious 18",
-      "Fab 4 surrenders",
-      "Extended deviations",
-      "Game quality scenarios",
+      { name: "Illustrious 18", note: "Easy · Medium · Hard" },
+      { name: "Fab 4 surrenders", note: "Easy · Medium · Hard" },
+      { name: "Extended deviations" },
+      { name: "Game quality scenarios" },
     ],
   },
   {
     label: "Integrated Practice",
-    drills: ["Simulator", "Personalized practice"],
+    drills: [
+      { name: "Casino simulator" },
+      { name: "Personalized practice", note: "AI · spaced repetition" },
+    ],
   },
 ];
 
@@ -144,58 +195,94 @@ const countingSystems: CountingSystem[] = [
   {
     name: "Hi-Lo",
     rank: "Primary",
+    level: "Level I",
     values: "2-6 → +1    7-9 → 0    10-A → −1",
     note: "The gold standard. Taught first, practiced deepest, and the one 99% of players should use.",
   },
   {
     name: "KO",
     rank: "Alternate",
+    level: "Level I · unbalanced",
     values: "2-7 → +1    8-9 → 0    10-A → −1",
-    note: "Unbalanced. Skips the true-count conversion step entirely.",
+    note: "Unbalanced — skips the true-count conversion step. Slight trade in accuracy for simplicity.",
   },
   {
     name: "Hi-Opt I",
     rank: "Alternate",
+    level: "Level I · balanced",
     values: "3-6 → +1    2, 7-9, A → 0    10 → −1",
-    note: "Slightly more accurate than Hi-Lo at the cost of a side ace-count.",
+    note: "Slightly more accurate than Hi-Lo at the cost of a separate side ace-count.",
   },
   {
     name: "Hi-Opt II",
-    rank: "Level II",
+    rank: "Technical",
+    level: "Level II · balanced",
     values: "2-3, 6-7 → +1    4-5 → +2    8-9 → 0    10 → −2",
-    note: "Level-2 count with a side ace-count. High ceiling, unforgiving in practice.",
+    note: "High ceiling, unforgiving in practice. Side ace-count recommended.",
   },
   {
     name: "Omega II",
-    rank: "Level II",
+    rank: "Technical",
+    level: "Level II · balanced",
     values: "2-3, 7 → +1    4-6 → +2    8 → 0    9 → −1    10 → −2",
-    note: "Highest power for Schlesinger loyalists. A commitment.",
+    note: "Highest practical power. For Schlesinger loyalists who lift weights for fun.",
   },
   {
     name: "Zen Count",
-    rank: "Level II",
+    rank: "Technical",
+    level: "Level II · balanced",
     values: "2-3, 7 → +1    4-6 → +2    8-9 → 0    10 → −2    A → −1",
-    note: "Balanced level 2. Trades simplicity for correlation.",
+    note: "Balanced level-2. Trades simplicity for correlation. Popular in academic circles.",
   },
   {
     name: "Wong Halves",
-    rank: "Level III",
-    values: "Fractional values across all ranks",
-    note: "Maximum accuracy. For obsessives.",
+    rank: "Obsessive",
+    level: "Level III · fractional",
+    values: "2 → +0.5    3-4 → +1    5 → +1.5    6 → +1    7 → +0.5    8 → 0    9 → −0.5    10-A → −1",
+    note: "Theoretical perfection, practical nightmare. Included for completeness.",
   },
 ];
 
 const simulatorFeatures = [
   "H17 or S17 dealer rule",
-  "Double after split (DAS)",
+  "Double after split",
+  "Resplit aces, late surrender",
   "1 to 8 deck shoes",
-  "Configurable penetration",
-  "Realistic chip spreads",
+  "Configurable penetration (50–90%)",
+  "Realistic chip spreads (1-4 through 1-20)",
   "Discard tray visualization",
   "Multi-player AI tables",
-  "Heat and surveillance overlay",
+  "Distraction overlays",
+  "Heat and surveillance grading",
   "Count checkpoints mid-shoe",
-  "Multi-axis performance grading",
+  "Multi-axis performance scoring",
+];
+
+const casinoPresets: CasinoPreset[] = [
+  {
+    name: "Vegas Strip Standard",
+    decks: "6 decks",
+    rules: ["S17", "DAS", "RSA", "LS", "3:2"],
+    pen: "75% penetration",
+  },
+  {
+    name: "Downtown Vegas",
+    decks: "2 decks",
+    rules: ["H17", "DAS", "3:2"],
+    pen: "65% penetration",
+  },
+  {
+    name: "Atlantic City",
+    decks: "8 decks",
+    rules: ["S17", "DAS", "RSA", "LS", "3:2"],
+    pen: "67% penetration",
+  },
+  {
+    name: "Tough Vegas",
+    decks: "6 decks",
+    rules: ["H17", "DAS", "3:2"],
+    pen: "70% penetration",
+  },
 ];
 
 const belts: Belt[] = [
@@ -223,9 +310,123 @@ const belts: Belt[] = [
   {
     belt: "Dojo Legend",
     range: "Levels 16–20",
-    title: "Master",
-    desc: "Advanced advantage play. Grand Sensei.",
+    title: "Grand Sensei",
+    desc: "Advanced advantage play. Mastery of every drill.",
     color: "#34d399",
+  },
+];
+
+const referenceTools: ReferenceTool[] = [
+  {
+    label: "Strategy Charts",
+    desc: "Interactive and rule-aware. Flip H17/S17, DAS, RSA, surrender — the table rewrites itself.",
+  },
+  {
+    label: "Deviation Indices",
+    desc: "The Illustrious 18, the Fab 4, and the Extended list with their index numbers.",
+  },
+  {
+    label: "Bet Spread Tables",
+    desc: "Single and two-hand ramps from 1-4 through 1-20. Linear or Kelly-weighted.",
+  },
+  {
+    label: "Edge Calculator",
+    desc: "Enter the rules and penetration. Get base house edge, player edge per true count, and break-even TC.",
+  },
+  {
+    label: "Bankroll Planner",
+    desc: "Full Kelly, fractional Kelly, risk of ruin. Across session length and spread.",
+  },
+  {
+    label: "Variance Projection",
+    desc: "Monte-Carlo swing simulator over 4 to 200 shoes. Drawdown and confidence bands plotted.",
+  },
+  {
+    label: "Dealer Bust Chart",
+    desc: "Dealer bust frequency by upcard (2–A) across true counts −5 to +8.",
+  },
+  {
+    label: "Per-TC Edge Curve",
+    desc: "The edge-vs-count line itself. See where it turns positive.",
+  },
+  {
+    label: "Casino Database",
+    desc: "Player-submitted game conditions. Search by property, city, or stake.",
+  },
+  {
+    label: "120+ Glossary",
+    desc: "Ace Side Count to Wong Halves. Every term linked at its first appearance in lessons.",
+  },
+];
+
+const achievementCategories: AchievementCat[] = [
+  {
+    label: "Curriculum",
+    count: 13,
+    examples: ["Foundation Laid", "Side Quest Scholar", "Dojo Graduate"],
+  },
+  {
+    label: "Practice",
+    count: 9,
+    examples: ["Drill Sergeant · 100 drills", "Sharpshooter · 90% avg", "Weak Spot Closer"],
+  },
+  {
+    label: "Mastery",
+    count: 8,
+    examples: [
+      "Inhuman Speed · deck countdown < 20s",
+      "Deviation Master · 90%+",
+      "Flawless Round · 100% accuracy",
+    ],
+  },
+  {
+    label: "Streak",
+    count: 6,
+    examples: ["Three-Peat · 3 days", "Fortnight Focus · 14 days", "Centurion · 100 days"],
+  },
+  {
+    label: "Milestone",
+    count: 8,
+    examples: [
+      "Blue Belt → Dojo Legend",
+      "Thousand-Hand Warrior",
+      "XP Titan · 10,000 XP",
+    ],
+  },
+  {
+    label: "Behavioral",
+    count: 5,
+    examples: ["Midnight Grinder", "Early Bird", "Speed Reader · 3 lessons in a day"],
+  },
+];
+
+const edgeTable: EdgeRow[] = [
+  { tc: "−5", edge: -3.0, note: "House edge amplified" },
+  { tc: "−2", edge: -1.5, note: "Below basic strategy baseline" },
+  { tc: " 0", edge: -0.5, note: "Basic strategy baseline" },
+  { tc: "+2", edge: 0.0, note: "Roughly break-even" },
+  { tc: "+3", edge: 0.5, note: "Player edge begins" },
+  { tc: "+5", edge: 2.0, note: "Bet large — this is what you waited for" },
+  { tc: "+8", edge: 3.5, note: "Maximum practical edge" },
+];
+
+const comparisons: ComparisonRow[] = [
+  {
+    approach: "YouTube videos",
+    gaps: "Scattered. No structure. No progress. No way to grade your running count.",
+  },
+  {
+    approach: "Thorp, Wong, Schlesinger",
+    gaps: "The canon. Essential reading. A book cannot time your deck countdown.",
+  },
+  {
+    approach: "Drill-only apps",
+    gaps: "Assume you already know how to count. Skip the education.",
+  },
+  {
+    approach: "Count Dojo",
+    gaps: "Curriculum, drills, simulator, reference. One stack, from beginner to Grand Sensei.",
+    emphasis: true,
   },
 ];
 
@@ -233,11 +434,10 @@ const pricingFree = {
   label: "Free",
   headline: "Start training. No card required.",
   items: [
-    "All of Unit I — Blackjack Foundations",
-    "First three lessons of Unit II",
-    "Seven unlimited practice drills",
-    "One daily-limited drill (running count, five minutes a day)",
-    "Every reference: strategy charts, edge calculator, glossary",
+    "All 17 lessons of Unit I — Blackjack Foundations",
+    "First five lessons of Unit II — Hi-Lo basics",
+    "Five unlimited practice drills · Hard, Soft, Pairs, Mixed, Card Flash",
+    "Every reference — strategy charts, edge calculator, 120+ glossary",
     "Placement tests for skip-ahead",
   ],
 };
@@ -247,7 +447,7 @@ const pricingPremium = {
   headline: "The full dojo.",
   items: [
     "Units II through VI — true count, deviations, readiness, advanced play",
-    "Every drill on adaptive difficulty with medal tiers",
+    "All 19 drill types on adaptive difficulty with medal tiers",
     "The casino simulator with full rule configuration",
     "Personalized practice via spaced-repetition review",
     "65 achievements, 20 levels, four belt ranks",
@@ -286,7 +486,7 @@ const faq: FaqItem[] = [
   },
   {
     q: "Will this app guarantee I win?",
-    a: "No. Counting gives you a mathematical edge over time — typically half a percent to one and a half percent. Variance means short-term losses are normal. You are building an advantage, not a certainty.",
+    a: "No. Counting gives you a mathematical edge over time — typically half a percent to two percent at a favorable true count. Variance means short-term losses are normal. You are building an advantage, not a certainty.",
   },
   {
     q: "How long does it take to learn?",
@@ -294,11 +494,19 @@ const faq: FaqItem[] = [
   },
   {
     q: "Do I need to be good at math?",
-    a: "No. Hi-Lo only requires adding and subtracting one. True-count conversion is dividing by a whole number. Every bit of arithmetic is taught step by step.",
+    a: "No. Hi-Lo only requires adding and subtracting one. True-count conversion is dividing a small integer by another small integer. Every bit of arithmetic is taught step by step.",
   },
   {
     q: "What is the difference between Free and Premium?",
-    a: "Free gives you all of Unit I, the first three lessons of Unit II, seven unlimited practice drills, and every reference. Premium opens Units II through VI, the casino simulator, personalized practice, and the full nineteen-drill library.",
+    a: "Free gives you all seventeen lessons of Unit I, the first five lessons of Unit II, five unlimited practice drills, and every reference tool. Premium opens Units II through VI, the casino simulator, personalized practice, and the full nineteen-drill library.",
+  },
+  {
+    q: "Which counting system should I learn?",
+    a: "Hi-Lo. It is the best practical balance of accuracy and ease of use, and every serious player's first system. Six other systems are available in the app for the curious or the obsessed.",
+  },
+  {
+    q: "Can I use Count Dojo offline?",
+    a: "Yes. Every lesson, drill, and reference tool works offline. Progress syncs to the cloud when you are back online.",
   },
 ];
 
@@ -337,7 +545,7 @@ function Reveal({
           io.disconnect();
         }
       },
-      { threshold: 0.12, rootMargin: "0px 0px -10% 0px" },
+      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
@@ -372,7 +580,14 @@ function PlayStoreIcon() {
 
 function ArrowIcon() {
   return (
-    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
+    <svg
+      className="w-3.5 h-3.5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      aria-hidden
+    >
       <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H9M17 7V15" />
     </svg>
   );
@@ -406,6 +621,191 @@ function StoreButtons({ primary = false }: { primary?: boolean }) {
         </span>
       </a>
     </div>
+  );
+}
+
+type Card = { rank: string; suit: "s" | "h" | "d" | "c" };
+const SUIT_GLYPH: Record<Card["suit"], string> = { s: "♠", h: "♥", d: "♦", c: "♣" };
+
+const liveDemo: Card[] = [
+  { rank: "A", suit: "s" },
+  { rank: "7", suit: "h" },
+  { rank: "5", suit: "d" },
+  { rank: "K", suit: "c" },
+  { rank: "3", suit: "s" },
+  { rank: "9", suit: "h" },
+  { rank: "Q", suit: "d" },
+  { rank: "2", suit: "c" },
+  { rank: "J", suit: "s" },
+  { rank: "4", suit: "h" },
+  { rank: "8", suit: "d" },
+  { rank: "6", suit: "c" },
+];
+
+function hiLoValue(rank: string): number {
+  if (["2", "3", "4", "5", "6"].includes(rank)) return 1;
+  if (["7", "8", "9"].includes(rank)) return 0;
+  return -1;
+}
+
+function tagLabel(n: number): string {
+  if (n > 0) return `+${n}`;
+  if (n < 0) return `${n}`;
+  return "0";
+}
+
+function LiveCountDemoSection() {
+  const [dealt, setDealt] = useState(0);
+  const [playing, setPlaying] = useState(true);
+
+  useEffect(() => {
+    if (!playing) return;
+    const id = setInterval(() => {
+      setDealt((d) => {
+        if (d >= liveDemo.length) {
+          return 0;
+        }
+        return d + 1;
+      });
+    }, 950);
+    return () => clearInterval(id);
+  }, [playing]);
+
+  const runningCount = useMemo(
+    () =>
+      liveDemo
+        .slice(0, dealt)
+        .reduce((acc, c) => acc + hiLoValue(c.rank), 0),
+    [dealt],
+  );
+
+  const currentIndex = dealt > 0 ? dealt - 1 : -1;
+
+  return (
+    <section className="border-b border-rule bg-ink-1">
+      <div className="site-shell py-20 md:py-28">
+        <div className="grid md:grid-cols-[1fr,2fr] gap-10 md:gap-16 items-start mb-12">
+          <div>
+            <p className="text-chapter mb-5">Demonstration</p>
+            <h2
+              className="font-display text-display-md text-paper text-balance"
+              style={{ fontVariationSettings: '"SOFT" 80, "opsz" 96' }}
+            >
+              This is what counting looks like.
+            </h2>
+          </div>
+          <p className="text-lg text-paper-muted max-w-xl text-pretty self-end">
+            Every card has a Hi-Lo tag. Low cards (2–6) add one. Tens and aces subtract one. Sevens
+            through nines are zero. Keep the running total in your head. That is the entire idea.
+            Now watch the count drift as the shoe reveals itself.
+          </p>
+        </div>
+
+        <div className="border border-rule rounded-md bg-ink-0 overflow-hidden">
+          <div className="px-5 py-3 border-b border-rule flex items-center justify-between gap-4 flex-wrap">
+            <span className="text-label">Hi-Lo · running count</span>
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                className="link-mono text-paper-muted hover:text-paper"
+                onClick={() => {
+                  setDealt(0);
+                  setPlaying(true);
+                }}
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                className="link-mono text-paper-muted hover:text-paper"
+                onClick={() => setPlaying((p) => !p)}
+                aria-pressed={!playing}
+              >
+                {playing ? "Pause" : "Play"}
+              </button>
+            </div>
+          </div>
+
+          <div className="relative px-5 md:px-10 pt-16 pb-8 overflow-x-auto">
+            <div className="flex gap-3 md:gap-4 min-w-max items-end">
+              {liveDemo.map((card, i) => {
+                const state =
+                  i < dealt
+                    ? i === currentIndex
+                      ? "current"
+                      : "dealt"
+                    : "pending";
+                const tag = hiLoValue(card.rank);
+                return (
+                  <div key={i} className="relative">
+                    {state === "current" && (
+                      <span className="count-card__tag">
+                        tag {tagLabel(tag)}
+                      </span>
+                    )}
+                    <div
+                      className={`count-card count-card--${state}`}
+                      data-suit={card.suit}
+                    >
+                      <span className="count-card__rank">
+                        {card.rank}
+                        {SUIT_GLYPH[card.suit]}
+                      </span>
+                      <span className="count-card__suit">{SUIT_GLYPH[card.suit]}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="border-t border-rule px-5 md:px-10 py-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div>
+              <p className="text-label mb-1">Cards dealt</p>
+              <p className="text-stat text-3xl tabular-nums text-paper">
+                {dealt}/{liveDemo.length}
+              </p>
+            </div>
+            <div>
+              <p className="text-label mb-1">Running count</p>
+              <p
+                className="text-stat text-3xl tabular-nums"
+                style={{
+                  color:
+                    runningCount > 0
+                      ? "var(--emerald)"
+                      : runningCount < 0
+                        ? "var(--amber)"
+                        : "var(--paper)",
+                }}
+              >
+                {tagLabel(runningCount)}
+              </p>
+            </div>
+            <div>
+              <p className="text-label mb-1">Current tag</p>
+              <p className="text-stat text-3xl tabular-nums text-paper">
+                {currentIndex >= 0 ? tagLabel(hiLoValue(liveDemo[currentIndex].rank)) : "—"}
+              </p>
+            </div>
+            <div>
+              <p className="text-label mb-1">Six decks remain</p>
+              <p className="text-stat text-3xl tabular-nums text-paper">
+                {runningCount === 0
+                  ? "0"
+                  : `${(runningCount / 6 >= 0 ? "+" : "")}${(runningCount / 6).toFixed(2)}`}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-paper-muted text-sm mt-6 max-w-2xl text-pretty">
+          Count Dojo teaches this from the first lesson, then accelerates it — through speed flashes,
+          distractions, and the deck countdown drill. Legend tier is a full deck in under twenty
+          seconds.
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -478,10 +878,40 @@ function ProofStrip() {
         <div className="proof-strip">
           {proofStats.map((s) => (
             <div key={s.label} className="proof-cell">
-              <span className="text-stat text-5xl md:text-6xl text-paper">{s.number}</span>
+              <span className="text-stat text-5xl md:text-6xl tabular-nums text-paper">
+                {s.number}
+              </span>
               <span className="text-label">{s.label}</span>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ThorpEpigraph() {
+  return (
+    <section className="border-b border-rule bg-ink-0">
+      <div className="site-shell py-20 md:py-28">
+        <div className="max-w-4xl">
+          <p className="text-chapter mb-6">Epigraph</p>
+          <blockquote
+            className="font-display text-display-md text-paper text-pretty leading-[1.05]"
+            style={{ fontVariationSettings: '"SOFT" 70, "opsz" 96' }}
+          >
+            &ldquo;Blackjack can be beaten. Not with luck or hunches or betting systems.{" "}
+            <span
+              className="italic"
+              style={{ fontVariationSettings: '"SOFT" 100, "opsz" 144' }}
+            >
+              With mathematics.
+            </span>
+            &rdquo;
+          </blockquote>
+          <figcaption className="mt-8 font-mono text-[0.72rem] tracking-[0.22em] uppercase text-paper-faint">
+            after Edward O. Thorp · Beat the Dealer · 1962
+          </figcaption>
         </div>
       </div>
     </section>
@@ -519,15 +949,15 @@ function CurriculumSection() {
             </h2>
           </div>
           <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
-            A structured curriculum that starts at card values and ends at advanced advantage
-            play. Placement tests let experienced players skip directly to the unit that suits
-            them.
+            A structured curriculum from card values to advanced advantage play. Placement tests
+            let experienced players skip directly to the unit that suits them — with every lesson
+            grounded in math, not hype.
           </p>
         </div>
         <div>
           {curriculum.map((unit, i) => (
-            <Reveal key={unit.numeral} delay={i * 60}>
-              <div className="editorial-row group">
+            <Reveal key={unit.numeral} delay={i * 50}>
+              <div className="editorial-row group items-start">
                 <span className="chapter-mark w-12 self-start mt-1">{unit.numeral}</span>
                 <div className="min-w-0">
                   <h3
@@ -536,10 +966,18 @@ function CurriculumSection() {
                   >
                     {unit.title}
                   </h3>
-                  <p className="text-paper-muted max-w-2xl text-pretty">{unit.synopsis}</p>
+                  <p className="text-paper-muted max-w-2xl text-pretty mb-4">{unit.synopsis}</p>
+                  <ul className="flex flex-wrap gap-x-6 gap-y-1.5 font-mono text-[0.72rem] tracking-[0.12em] text-paper-faint">
+                    {unit.samples.map((s) => (
+                      <li key={s}>{s}</li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="text-right flex flex-col items-end gap-2 whitespace-nowrap">
-                  <span className="text-label">{unit.lessons} lessons</span>
+                <div className="text-right flex flex-col items-end gap-2 whitespace-nowrap mt-1">
+                  <span className="text-label tabular-nums">
+                    {unit.lessons} lessons
+                    {unit.sideBranches ? ` · ${unit.sideBranches} SB` : ""}
+                  </span>
                   <TierBadge tier={unit.tier} />
                 </div>
               </div>
@@ -563,33 +1001,65 @@ function DrillsSection() {
             </h2>
           </div>
           <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
-            Every drill awards Bronze, Silver, Gold, or Legend against accuracy and speed
-            gates. A personalized-practice engine generates weak-scenario review sessions using
-            spaced repetition.
+            Every drill scores against accuracy and speed gates. Bronze, silver, gold, legend. A
+            personalized-practice engine reads your history and builds weak-scenario review
+            sessions using spaced repetition.
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-x-10 md:gap-x-14 gap-y-12 md:gap-y-16">
           {drillCategories.map((cat, i) => (
-            <Reveal key={cat.label} delay={i * 80}>
+            <Reveal key={cat.label} delay={i * 70}>
               <div>
                 <p className="text-label mb-5 flex items-center gap-3">
-                  <span className="font-mono text-paper-ghost">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="font-mono text-paper-ghost tabular-nums">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
                   {cat.label}
                 </p>
                 <ul className="flex flex-col">
                   {cat.drills.map((d) => (
                     <li
-                      key={d}
-                      className="font-display text-xl md:text-2xl text-paper border-t border-rule py-3 first:border-t-0 first:pt-0"
-                      style={{ fontVariationSettings: '"SOFT" 70, "opsz" 48' }}
+                      key={d.name}
+                      className="border-t border-rule py-3 first:border-t-0 first:pt-0"
                     >
-                      {d}
+                      <p
+                        className="font-display text-xl md:text-2xl text-paper"
+                        style={{ fontVariationSettings: '"SOFT" 70, "opsz" 48' }}
+                      >
+                        {d.name}
+                      </p>
+                      {d.note && (
+                        <p className="font-mono text-[0.7rem] tracking-[0.16em] uppercase text-emerald-accent mt-1.5">
+                          {d.note}
+                        </p>
+                      )}
                     </li>
                   ))}
                 </ul>
               </div>
             </Reveal>
           ))}
+        </div>
+
+        <div className="mt-20 pt-10 border-t border-rule grid md:grid-cols-[auto,1fr] gap-8 md:gap-12 items-center">
+          <p className="text-label">Medal thresholds</p>
+          <div className="flex flex-wrap gap-x-10 gap-y-3 font-mono text-sm tabular-nums text-paper">
+            <span>
+              <span className="text-paper-faint">Bronze</span>  70%
+            </span>
+            <span>
+              <span className="text-paper-faint">Silver</span>  80%
+            </span>
+            <span>
+              <span className="text-paper-faint">Gold</span>  90%
+            </span>
+            <span className="text-emerald-accent">
+              <span className="text-paper-faint">Legend</span>  98%
+            </span>
+            <span className="text-paper-muted ml-auto">
+              Timed drills require perfect accuracy under time.
+            </span>
+          </div>
         </div>
       </div>
     </section>
@@ -611,15 +1081,19 @@ function CountingSystemsSection() {
           </div>
           <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
             Hi-Lo is the gold standard and our default. Side branches cover six alternatives —
-            for history, curiosity, and the small set of players who benefit from specialized
-            systems.
+            for history, curiosity, and the players who benefit from specialized systems.
           </p>
         </div>
         <div>
           {countingSystems.map((s, i) => (
-            <Reveal key={s.name} delay={i * 40}>
-              <div className="editorial-row">
-                <span className="text-label w-24">{s.rank}</span>
+            <Reveal key={s.name} delay={i * 35}>
+              <div className="editorial-row items-start">
+                <div className="flex flex-col gap-1 min-w-[7rem]">
+                  <span className="text-label">{s.rank}</span>
+                  <span className="font-mono text-[0.62rem] tracking-[0.2em] uppercase text-paper-faint">
+                    {s.level}
+                  </span>
+                </div>
                 <div className="min-w-0">
                   <h3
                     className="font-display text-2xl md:text-3xl text-paper mb-2"
@@ -628,7 +1102,7 @@ function CountingSystemsSection() {
                     {s.name}
                   </h3>
                   <p className="text-paper-muted mb-3 max-w-2xl text-pretty">{s.note}</p>
-                  <p className="font-mono text-xs md:text-sm text-paper-faint tracking-wider">
+                  <p className="font-mono text-xs md:text-sm text-paper-faint tabular-nums tracking-wider">
                     {s.values}
                   </p>
                 </div>
@@ -642,20 +1116,117 @@ function CountingSystemsSection() {
   );
 }
 
+function EdgeRowLine({ row }: { row: EdgeRow }) {
+  const pct = Math.max(-5, Math.min(5, row.edge));
+  const width = `${(Math.abs(pct) / 5) * 50}%`;
+  const isPositive = row.edge > 0;
+  const isZero = row.edge === 0;
+  const color = isZero
+    ? "var(--paper-faint)"
+    : isPositive
+      ? "var(--emerald)"
+      : "var(--amber)";
+  return (
+    <div className="edge-row" style={{ color }}>
+      <span className="tabular-nums text-paper-muted">TC {row.tc}</span>
+      <div className="edge-bar" aria-hidden>
+        <span className="edge-bar__mid" />
+        <span
+          className="edge-bar__fill"
+          style={{
+            width,
+            left: isPositive ? "50%" : `calc(50% - ${width})`,
+          }}
+        />
+      </div>
+      <span className="tabular-nums">
+        {row.edge > 0 ? "+" : ""}
+        {row.edge.toFixed(1)}%
+      </span>
+    </div>
+  );
+}
+
+function MathSection() {
+  return (
+    <section className="section-rhythm bg-ink-1 border-y border-rule">
+      <div className="site-shell">
+        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+          <div>
+            <p className="text-chapter mb-5">§ V · The Math</p>
+            <h2 className="font-display text-display-lg text-paper text-balance">
+              Where the edge actually lives.
+            </h2>
+          </div>
+          <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
+            Running count measures what has left the shoe. True count scales it by what remains.
+            Each TC point shifts your edge by roughly half a percent. That is the entire
+            thesis — quantified.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-[1.05fr,1fr] gap-10 md:gap-16 items-stretch">
+          <div className="formula-card flex flex-col justify-between">
+            <div>
+              <p className="text-label mb-6">True count formula</p>
+              <div className="flex items-baseline gap-4 md:gap-6 flex-wrap">
+                <span className="formula-glyph text-paper">TC</span>
+                <span className="formula-glyph text-paper-faint">=</span>
+                <div>
+                  <div className="text-center font-display text-xl md:text-2xl text-paper pb-1 border-b border-rule-strong px-2">
+                    Running Count
+                  </div>
+                  <div className="text-center font-display text-xl md:text-2xl text-paper pt-1 px-2">
+                    Decks Remaining
+                  </div>
+                </div>
+              </div>
+              <p className="text-paper-muted text-pretty mt-10 max-w-md">
+                Running count of +10 with five decks left behind the cut card is a true count of
+                +2. That +2 is a bet-sizing and deviation signal — one the casino cannot see.
+              </p>
+            </div>
+            <p className="font-mono text-[0.68rem] tracking-[0.22em] uppercase text-paper-faint mt-10">
+              Truncate toward zero. No rounding up.
+            </p>
+          </div>
+
+          <div className="border border-rule-strong rounded-md bg-ink-0 p-6 md:p-8">
+            <div className="flex items-baseline justify-between mb-6">
+              <p className="text-label">Edge by true count</p>
+              <p className="font-mono text-[0.62rem] tracking-[0.2em] uppercase text-paper-faint">
+                6 deck · S17 · DAS
+              </p>
+            </div>
+            <div>
+              {edgeTable.map((row) => (
+                <EdgeRowLine key={row.tc} row={row} />
+              ))}
+            </div>
+            <p className="text-paper-muted text-sm mt-6 text-pretty">
+              House above zero, player below. The crossover is the point of the craft.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function SimulatorSection() {
   return (
-    <section id="simulator" className="section-rhythm bg-ink-1 border-y border-rule">
+    <section id="simulator" className="section-rhythm">
       <div className="site-shell">
         <div className="grid md:grid-cols-[1.1fr,1fr] gap-16 items-center">
           <div>
-            <p className="text-chapter mb-5">§ V · The Dojo Floor</p>
+            <p className="text-chapter mb-5">§ VI · The Dojo Floor</p>
             <h2 className="font-display text-display-lg text-paper text-balance mb-8">
               A casino, calibrated.
             </h2>
             <p className="text-lg text-paper-muted mb-10 max-w-xl text-pretty">
-              The simulator models the rules that actually matter: dealer stand, double after
-              split, shoe size, penetration. Your bet sizing, true-count reads, and play
-              decisions are graded in real time.
+              The simulator models the rules that matter: dealer stand, double after split, shoe
+              size, penetration, distractions, surveillance. Your bet sizing, true-count reads,
+              and play decisions are graded in real time.
             </p>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
               {simulatorFeatures.map((f) => (
@@ -680,6 +1251,36 @@ function SimulatorSection() {
             </div>
           </div>
         </div>
+
+        <div className="mt-20 pt-10 border-t border-rule">
+          <div className="flex items-baseline justify-between mb-6">
+            <p className="text-label">Built-in presets</p>
+            <p className="font-mono text-[0.62rem] tracking-[0.2em] uppercase text-paper-faint">
+              Or build your own
+            </p>
+          </div>
+          <div className="preset-grid">
+            {casinoPresets.map((p) => (
+              <div key={p.name} className="preset-cell">
+                <p
+                  className="font-display text-lg md:text-xl text-paper"
+                  style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
+                >
+                  {p.name}
+                </p>
+                <p className="font-mono text-[0.68rem] tracking-[0.14em] uppercase text-paper-muted tabular-nums">
+                  {p.decks}
+                </p>
+                <p className="font-mono text-[0.72rem] tracking-[0.08em] text-paper-faint">
+                  {p.rules.join("  ·  ")}
+                </p>
+                <p className="font-mono text-[0.68rem] tracking-[0.14em] uppercase text-paper-faint tabular-nums mt-auto">
+                  {p.pen}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -687,11 +1288,11 @@ function SimulatorSection() {
 
 function BeltsSection() {
   return (
-    <section className="section-rhythm">
+    <section className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
         <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
           <div>
-            <p className="text-chapter mb-5">§ VI · The Journey</p>
+            <p className="text-chapter mb-5">§ VII · The Journey</p>
             <h2 className="font-display text-display-lg text-paper text-balance">
               From student to Grand Sensei.
             </h2>
@@ -717,7 +1318,7 @@ function BeltsSection() {
                 />
               </div>
               <div>
-                <p className="text-label mb-2">{b.range}</p>
+                <p className="text-label mb-2 tabular-nums">{b.range}</p>
                 <h3
                   className="font-display text-2xl md:text-3xl text-paper"
                   style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
@@ -737,15 +1338,164 @@ function BeltsSection() {
   );
 }
 
+function ReferenceSection() {
+  return (
+    <section className="section-rhythm">
+      <div className="site-shell">
+        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+          <div>
+            <p className="text-chapter mb-5">§ VIII · The Reference Library</p>
+            <h2 className="font-display text-display-lg text-paper text-balance">
+              Ten tools.
+              <br />
+              Always one tap away.
+            </h2>
+          </div>
+          <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
+            The drills build the reflex. The reference library keeps the math honest. Everything
+            is live, rule-aware, and works offline.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-x-14 md:gap-x-20">
+          {referenceTools.map((t, i) => (
+            <div
+              key={t.label}
+              className="py-5 border-t border-rule flex gap-6 items-start"
+            >
+              <span className="font-mono text-[0.7rem] tracking-[0.22em] text-paper-faint tabular-nums w-8 pt-1">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className="min-w-0">
+                <h3
+                  className="font-display text-xl md:text-2xl text-paper mb-1"
+                  style={{ fontVariationSettings: '"SOFT" 75, "opsz" 48' }}
+                >
+                  {t.label}
+                </h3>
+                <p className="text-paper-muted text-sm md:text-base text-pretty">{t.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BadgesSection() {
+  return (
+    <section className="section-rhythm bg-ink-1 border-y border-rule">
+      <div className="site-shell">
+        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+          <div>
+            <p className="text-chapter mb-5">§ IX · The Badges</p>
+            <h2 className="font-display text-display-lg text-paper text-balance">
+              Sixty-five ways
+              <br />
+              to be caught trying.
+            </h2>
+          </div>
+          <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
+            Some are earned by finishing units, some by hitting speed gates, a few by showing up at
+            strange hours. Centurion is the hundred-day streak. Inhuman Speed is a full deck
+            counted down in under twenty seconds.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-px bg-rule border border-rule">
+          {achievementCategories.map((cat) => (
+            <div
+              key={cat.label}
+              className="bg-ink-0 p-8 md:p-10 flex flex-col gap-5"
+            >
+              <div className="flex items-baseline justify-between">
+                <h3
+                  className="font-display text-xl md:text-2xl text-paper"
+                  style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
+                >
+                  {cat.label}
+                </h3>
+                <span className="text-stat text-2xl md:text-3xl tabular-nums text-emerald-accent">
+                  {cat.count}
+                </span>
+              </div>
+              <ul className="flex flex-col gap-2">
+                {cat.examples.map((ex) => (
+                  <li
+                    key={ex}
+                    className="font-mono text-[0.74rem] tracking-[0.08em] text-paper-muted"
+                  >
+                    — {ex}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ComparisonSection() {
+  return (
+    <section className="section-rhythm">
+      <div className="site-shell">
+        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+          <div>
+            <p className="text-chapter mb-5">§ X · vs The Usual Path</p>
+            <h2 className="font-display text-display-lg text-paper text-balance">
+              A short, honest comparison.
+            </h2>
+          </div>
+          <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
+            Count Dojo is not the only way to learn. It is the only way that treats the stack —
+            curriculum, drills, simulator, and reference — as one thing.
+          </p>
+        </div>
+        <div>
+          {comparisons.map((row, i) => (
+            <div
+              key={row.approach}
+              className={`editorial-row items-start ${row.emphasis ? "border-rule-strong" : ""}`}
+            >
+              <span className="font-mono text-[0.72rem] tracking-[0.2em] text-paper-faint tabular-nums w-10 mt-1">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className="min-w-0">
+                <h3
+                  className={`font-display text-2xl md:text-3xl mb-2 ${
+                    row.emphasis ? "text-emerald-accent" : "text-paper"
+                  }`}
+                  style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
+                >
+                  {row.approach}
+                </h3>
+                <p
+                  className={`${row.emphasis ? "text-paper" : "text-paper-muted"} max-w-2xl text-pretty`}
+                >
+                  {row.gaps}
+                </p>
+              </div>
+              <span className="hidden md:inline-block" aria-hidden />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function PricingSection() {
   return (
     <section id="pricing" className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
         <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
           <div>
-            <p className="text-chapter mb-5">§ VII · Tuition</p>
+            <p className="text-chapter mb-5">§ XI · Tuition</p>
             <h2 className="font-display text-display-lg text-paper text-balance">
-              Free where it should be. Paid where it should be.
+              Free where it should be.
+              <br />
+              Paid where it should be.
             </h2>
           </div>
           <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
@@ -768,7 +1518,10 @@ function PricingSection() {
             <p className="text-paper-muted mb-8 text-pretty">{pricingFree.headline}</p>
             <ul className="space-y-3 mb-10 flex-1">
               {pricingFree.items.map((item) => (
-                <li key={item} className="flex items-start gap-3 text-sm md:text-base text-paper">
+                <li
+                  key={item}
+                  className="flex items-start gap-3 text-sm md:text-base text-paper"
+                >
                   <span className="font-mono text-emerald-accent mt-1 shrink-0">—</span>
                   <span className="text-pretty">{item}</span>
                 </li>
@@ -794,13 +1547,19 @@ function PricingSection() {
             </p>
             <ul className="space-y-3 mb-10 flex-1">
               {pricingPremium.items.map((item) => (
-                <li key={item} className="flex items-start gap-3 text-sm md:text-base text-paper">
+                <li
+                  key={item}
+                  className="flex items-start gap-3 text-sm md:text-base text-paper"
+                >
                   <span className="font-mono text-emerald-accent mt-1 shrink-0">—</span>
                   <span className="text-pretty">{item}</span>
                 </li>
               ))}
             </ul>
             <StoreButtons primary />
+            <p className="font-mono text-[0.66rem] tracking-[0.18em] uppercase text-paper-faint mt-5">
+              Subscriptions via App Store or Google Play. Cancel anytime.
+            </p>
           </div>
         </div>
       </div>
@@ -827,7 +1586,7 @@ function ScreenshotsSection() {
       <div className="site-shell">
         <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
           <div>
-            <p className="text-chapter mb-5">§ VIII · Surfaces</p>
+            <p className="text-chapter mb-5">§ XII · Surfaces</p>
             <h2 className="font-display text-display-lg text-paper text-balance">
               See where the reps happen.
             </h2>
@@ -839,7 +1598,7 @@ function ScreenshotsSection() {
         <div className="grid md:grid-cols-[1fr,auto,1fr] items-center gap-6 md:gap-12">
           <div className="hidden md:flex flex-col gap-4 items-end text-right">
             <span className="text-label">{current.alt}</span>
-            <span className="font-mono text-xs text-paper-faint">
+            <span className="font-mono text-xs text-paper-faint tabular-nums">
               {String(index + 1).padStart(2, "0")}  /  {String(screenshots.length).padStart(2, "0")}
             </span>
           </div>
@@ -863,7 +1622,14 @@ function ScreenshotsSection() {
               aria-label="Previous screenshot"
               className="h-11 w-11 rounded-full border border-rule-strong flex items-center justify-center text-paper hover:border-paper hover:text-emerald-accent transition-colors"
             >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden
+              >
                 <path d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -873,7 +1639,14 @@ function ScreenshotsSection() {
               aria-label="Next screenshot"
               className="h-11 w-11 rounded-full border border-rule-strong flex items-center justify-center text-paper hover:border-paper hover:text-emerald-accent transition-colors"
             >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden
+              >
                 <path d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -891,7 +1664,7 @@ function TestimonialsSection() {
   return (
     <section className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <p className="text-chapter mb-10">§ IX · What players say</p>
+        <p className="text-chapter mb-10">§ XIII · Voices</p>
         <div className="grid md:grid-cols-2 gap-x-14 md:gap-x-20 gap-y-14 md:gap-y-16">
           {testimonials.map((t, i) => (
             <Reveal key={t.author} delay={i * 80}>
@@ -932,7 +1705,7 @@ function FAQItem({
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        <span className="font-mono text-[0.7rem] tracking-[0.22em] uppercase text-paper-faint w-10 shrink-0">
+        <span className="font-mono text-[0.7rem] tracking-[0.22em] uppercase text-paper-faint w-10 shrink-0 tabular-nums">
           {number}
         </span>
         <span
@@ -942,7 +1715,14 @@ function FAQItem({
           {item.q}
         </span>
         <span className="faq-toggle-icon text-paper-muted">
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} aria-hidden>
+          <svg
+            className="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            aria-hidden
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16M4 12h16" />
           </svg>
         </span>
@@ -963,7 +1743,7 @@ function FAQSection() {
     <section id="faq" className="section-rhythm">
       <div className="site-shell max-w-4xl mx-auto">
         <div className="mb-12">
-          <p className="text-chapter mb-5">§ X · Questions</p>
+          <p className="text-chapter mb-5">§ XIV · Questions</p>
           <h2 className="font-display text-display-lg text-paper text-balance">
             Common doubts, straight answers.
           </h2>
@@ -985,11 +1765,11 @@ function FAQSection() {
 
 function FinalCTA() {
   return (
-    <section className="section-rhythm">
+    <section className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <div className="border-y border-rule py-16 md:py-24">
-          <p className="text-chapter mb-6 text-center">§ XI · Take the first rep</p>
-          <h2 className="font-display text-display-xl text-paper text-balance text-center max-w-4xl mx-auto">
+        <div className="py-16 md:py-24 text-center">
+          <p className="text-chapter mb-6">§ XV · Take the first rep</p>
+          <h2 className="font-display text-display-xl text-paper text-balance max-w-4xl mx-auto">
             The edge is legal.
             <br />
             The math is simple.
@@ -1004,7 +1784,7 @@ function FinalCTA() {
           <div className="flex justify-center mt-10 md:mt-12">
             <StoreButtons primary />
           </div>
-          <p className="text-label text-center mt-8">
+          <p className="text-label mt-8">
             Free to start    ·    No credit card    ·    Offline-first
           </p>
         </div>
@@ -1026,12 +1806,18 @@ export default function Home() {
       <SiteHeader links={homeLinks} />
       <main>
         <HeroSection />
+        <LiveCountDemoSection />
         <ProofStrip />
+        <ThorpEpigraph />
         <CurriculumSection />
         <DrillsSection />
         <CountingSystemsSection />
+        <MathSection />
         <SimulatorSection />
         <BeltsSection />
+        <ReferenceSection />
+        <BadgesSection />
+        <ComparisonSection />
         <PricingSection />
         <ScreenshotsSection />
         <TestimonialsSection />
