@@ -346,7 +346,35 @@ all respecting `prefers-reduced-motion`.
 
 ---
 
-## 8. Things to avoid
+## 8. Scroll-sticky gotchas (load-bearing)
+
+The cinematic 3D section (`CinematicSequence` in `page.tsx`) uses a 260vh
+outer section with a `position: sticky` inner pinned to the viewport.
+Scroll position drives every transform in the scene via `motion/react`
+`useScroll`. This pattern is fragile — these rules **must not** change:
+
+- `body { overflow-x: clip }` — **not** `hidden`. `overflow-x: hidden`
+  silently breaks `position: sticky` descendants because it creates a
+  scroll context on body. `clip` gives the same visual result without
+  the scroll context.
+- `.cinematic-section` must NOT have `overflow: hidden` or
+  `contain: layout paint`. Either rule establishes a scroll/clip
+  context that prevents the inner sticky from sticking to the viewport.
+  If you need to clip off-screen cards, do it on `.cinematic-sticky`
+  (inside the sticky), never on the outer section.
+- Stage text opacity is driven by **React state + CSS transition**, not
+  by motion `useTransform` on `style.opacity`. We tried the motion
+  route; motion updated `transform` but not `opacity` on the stage
+  divs for a reason we didn't fully diagnose. The state-driven approach
+  is more robust and cheaper anyway.
+
+Regression test: `npm run test:cinematic` boots Playwright against a
+running dev / prod server at localhost:3000 and asserts that sticky
+pins, the scene rotates with scroll, the Ace advances in Z, and each
+act fires at the correct scroll progress. Run this after any change
+that touches `.cinematic-*` CSS or `CinematicSequence`.
+
+## 9. Things to avoid
 
 - Do not add floating particles, glassmorphism cards, or animated
   gradient headlines. The redesign explicitly rejected these and every
@@ -368,7 +396,7 @@ all respecting `prefers-reduced-motion`.
 
 ---
 
-## 9. Pointers for future agents
+## 10. Pointers for future agents
 
 - Reading the Editorial Dojo spec (`docs/superpowers/specs/2026-04-19-
   site-redesign-design.md`) will save you real time before any visual

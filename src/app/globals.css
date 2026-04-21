@@ -62,7 +62,7 @@ body {
   font-family: var(--font-sans);
   font-feature-settings: "ss01", "cv11";
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -609,9 +609,7 @@ a {
   position: relative;
   height: 260vh;
   background: var(--ink-0);
-  overflow: hidden;
   color-scheme: dark;
-  contain: layout paint;
 }
 
 .cinematic-section::before {
@@ -728,7 +726,23 @@ a {
   position: absolute;
   max-width: min(640px, 88vw);
   text-align: center;
-  will-change: transform, opacity;
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 520ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 520ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: opacity, transform;
+}
+
+.cinematic-stage[data-active="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-stage {
+    transition: none;
+  }
 }
 
 .cinematic-chapter {

@@ -903,25 +903,6 @@ function CinematicSequence() {
     [0.82, 1, 1.05, 1, 1.02],
   );
 
-  const stage1Opacity = useTransform(
-    scrollYProgress,
-    [0, 0.04, 0.22, 0.3],
-    [0, 1, 1, 0],
-  );
-  const stage1Y = useTransform(scrollYProgress, [0, 0.3], [20, -20]);
-  const stage2Opacity = useTransform(
-    scrollYProgress,
-    [0.35, 0.42, 0.58, 0.66],
-    [0, 1, 1, 0],
-  );
-  const stage2Y = useTransform(scrollYProgress, [0.35, 0.66], [20, -20]);
-  const stage3Opacity = useTransform(
-    scrollYProgress,
-    [0.7, 0.78, 0.94, 1],
-    [0, 1, 1, 1],
-  );
-  const stage3Y = useTransform(scrollYProgress, [0.7, 1], [20, 0]);
-
   const scrollHintOpacity = useTransform(
     scrollYProgress,
     [0, 0.08, 0.18],
@@ -1033,9 +1014,9 @@ function CinematicSequence() {
         </div>
 
         <div className="cinematic-stages">
-          <motion.div
+          <div
             className="cinematic-stage"
-            style={{ opacity: stage1Opacity, y: stage1Y }}
+            data-active={activeStage === 0}
           >
             <p className="cinematic-chapter">Act I · The Deal</p>
             <h2 className="cinematic-headline">
@@ -1046,11 +1027,11 @@ function CinematicSequence() {
             <p className="cinematic-sub">
               One legal edge worth mastering — hidden in the patterns the cards leave behind.
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div
+          <div
             className="cinematic-stage"
-            style={{ opacity: stage2Opacity, y: stage2Y }}
+            data-active={activeStage === 1}
           >
             <p className="cinematic-chapter">Act II · The Helix</p>
             <h2 className="cinematic-headline">
@@ -1061,11 +1042,11 @@ function CinematicSequence() {
             <p className="cinematic-sub">
               Not in the card you just saw. In every card that has not come yet.
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div
+          <div
             className="cinematic-stage"
-            style={{ opacity: stage3Opacity, y: stage3Y }}
+            data-active={activeStage === 2}
           >
             <p className="cinematic-chapter">Act III · The Edge</p>
             <h2 className="cinematic-headline">
@@ -1076,7 +1057,7 @@ function CinematicSequence() {
             <p className="cinematic-sub">
               The math is simple. Everything below this line is how we teach it.
             </p>
-          </motion.div>
+          </div>
         </div>
 
         <div className="cinematic-progress" aria-hidden>
