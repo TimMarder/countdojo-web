@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import { SiteHeader } from "./_components/SiteHeader";
 import { SiteFooter } from "./_components/SiteFooter";
 
@@ -593,6 +594,103 @@ function ArrowIcon() {
   );
 }
 
+function ChapterMark({
+  roman,
+  title,
+  centered = false,
+  className = "",
+}: {
+  roman: string;
+  title: string;
+  centered?: boolean;
+  className?: string;
+}) {
+  const reduced = useReducedMotion();
+  return (
+    <p className={`text-chapter ${centered ? "text-center" : ""} ${className}`}>
+      <span aria-hidden>§ </span>
+      <motion.span
+        initial={reduced ? false : { rotateY: 90, opacity: 0 }}
+        whileInView={reduced ? undefined : { rotateY: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 110, damping: 16, mass: 0.8 }}
+        viewport={{ once: true, amount: 0.6 }}
+        style={{
+          display: "inline-block",
+          transformStyle: "preserve-3d",
+          transformOrigin: "center",
+        }}
+      >
+        {roman}
+      </motion.span>
+      <span aria-hidden> · {title}</span>
+    </p>
+  );
+}
+
+type PlayingCardFace = {
+  rank: string;
+  suit: "s" | "h" | "d" | "c";
+};
+
+function PlayingCardVisual({ rank, suit }: PlayingCardFace) {
+  const glyph = SUIT_GLYPH[suit];
+  return (
+    <div className="playing-card" data-suit={suit} aria-hidden>
+      <span className="playing-card__corner">
+        <span>{rank}</span>
+        <span className="playing-card__suit">{glyph}</span>
+      </span>
+      <span className="playing-card__center">{glyph}</span>
+      <span className="playing-card__corner playing-card__corner--bottom">
+        <span>{rank}</span>
+        <span className="playing-card__suit">{glyph}</span>
+      </span>
+    </div>
+  );
+}
+
+const HERO_FAN: Array<PlayingCardFace & { rotate: number; x: number; y: number; delay: number }> = [
+  { rank: "A", suit: "s", rotate: -20, x: -120, y: 30, delay: 0.05 },
+  { rank: "10", suit: "h", rotate: -10, x: -60, y: 5, delay: 0.18 },
+  { rank: "K", suit: "c", rotate: 0, x: 0, y: -6, delay: 0.31 },
+  { rank: "Q", suit: "d", rotate: 10, x: 60, y: 5, delay: 0.44 },
+  { rank: "J", suit: "s", rotate: 20, x: 120, y: 30, delay: 0.57 },
+];
+
+function HeroCardFan() {
+  const reduced = useReducedMotion();
+  return (
+    <div
+      className="hidden md:flex justify-center items-center relative min-h-[360px] w-full"
+      aria-hidden
+    >
+      {HERO_FAN.map((card, i) => (
+        <motion.div
+          key={`${card.rank}${card.suit}`}
+          className="absolute"
+          initial={
+            reduced
+              ? { opacity: 1, x: card.x, y: card.y, rotate: card.rotate }
+              : { opacity: 0, y: card.y + 120, rotate: card.rotate - 15, x: card.x * 0.4 }
+          }
+          animate={{ opacity: 1, y: card.y, x: card.x, rotate: card.rotate }}
+          transition={{
+            type: "spring",
+            stiffness: 90,
+            damping: 14,
+            mass: 1,
+            delay: reduced ? 0 : card.delay,
+          }}
+          whileHover={reduced ? undefined : { y: card.y - 12, rotate: card.rotate, transition: { type: "spring", stiffness: 260, damping: 18 } }}
+          style={{ zIndex: i }}
+        >
+          <PlayingCardVisual rank={card.rank} suit={card.suit} />
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 function StoreButtons({ primary = false }: { primary?: boolean }) {
   return (
     <div className="flex flex-col sm:flex-row gap-3">
@@ -704,7 +802,7 @@ function LiveCountDemoSection() {
         <div className="border border-rule rounded-md bg-ink-0 overflow-hidden">
           <div className="px-5 py-3 border-b border-rule flex items-center justify-between gap-4 flex-wrap">
             <span className="text-label">Hi-Lo · running count</span>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-5">
               <button
                 type="button"
                 className="link-mono text-paper-muted hover:text-paper"
@@ -722,6 +820,18 @@ function LiveCountDemoSection() {
                 aria-pressed={!playing}
               >
                 {playing ? "Pause" : "Play"}
+              </button>
+              <button
+                type="button"
+                className="link-mono text-paper-muted hover:text-paper disabled:opacity-30 disabled:cursor-not-allowed"
+                onClick={() => {
+                  setPlaying(false);
+                  setDealt((d) => (d >= liveDemo.length ? d : d + 1));
+                }}
+                disabled={dealt >= liveDemo.length}
+                aria-label="Deal next card"
+              >
+                Next →
               </button>
             </div>
           </div>
@@ -825,7 +935,7 @@ function HeroSection() {
       <div className="relative z-10 site-shell pt-32 pb-24 md:pt-40 md:pb-32 min-h-[88vh] flex items-end">
         <div className="grid md:grid-cols-[1.5fr,1fr] gap-16 w-full items-end">
           <div className="hero-stagger max-w-2xl">
-            <p className="text-chapter">§ I · An education in advantage play</p>
+            <ChapterMark roman="I" title="An education in advantage play" />
             <h1 className="font-display text-display-xl text-paper text-balance mt-6">
               A serious craft.
               <br />
@@ -849,19 +959,7 @@ function HeroSection() {
               Free to start    ·    No math skill required    ·    Works offline
             </p>
           </div>
-          <div className="hidden md:flex justify-end">
-            <div className="phone-mock rotate-3 w-full max-w-[280px]">
-              <div className="phone-mock__screen">
-                <Image
-                  src="/images/IMG_6959.PNG"
-                  alt="Count Dojo skill tree"
-                  width={360}
-                  height={780}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
+          <HeroCardFan />
         </div>
       </div>
     </section>
@@ -941,7 +1039,7 @@ function CurriculumSection() {
       <div className="site-shell">
         <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
           <div>
-            <p className="text-chapter mb-5">§ II · The Path</p>
+            <ChapterMark roman="II" title="The Path" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
               Six units,
               <br />
@@ -995,7 +1093,7 @@ function DrillsSection() {
       <div className="site-shell">
         <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
           <div>
-            <p className="text-chapter mb-5">§ III · The Repetition</p>
+            <ChapterMark roman="III" title="The Repetition" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
               Nineteen drills. Adaptive. Graded.
             </h2>
@@ -1072,7 +1170,7 @@ function CountingSystemsSection() {
       <div className="site-shell">
         <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
           <div>
-            <p className="text-chapter mb-5">§ IV · The Languages</p>
+            <ChapterMark roman="IV" title="The Languages" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
               Seven systems.
               <br />
@@ -1116,6 +1214,253 @@ function CountingSystemsSection() {
   );
 }
 
+type EdgePoint = { tc: number; edge: number };
+
+const edgeCurve: EdgePoint[] = [
+  { tc: -5, edge: -3.0 },
+  { tc: -4, edge: -2.5 },
+  { tc: -3, edge: -2.0 },
+  { tc: -2, edge: -1.5 },
+  { tc: -1, edge: -1.0 },
+  { tc: 0, edge: -0.55 },
+  { tc: 1, edge: -0.05 },
+  { tc: 2, edge: 0.45 },
+  { tc: 3, edge: 0.95 },
+  { tc: 4, edge: 1.4 },
+  { tc: 5, edge: 1.9 },
+  { tc: 6, edge: 2.4 },
+  { tc: 7, edge: 2.95 },
+  { tc: 8, edge: 3.5 },
+];
+
+function EdgeChart() {
+  const reduced = useReducedMotion();
+  const svgRef = useRef<SVGSVGElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState<EdgePoint | null>(null);
+  const [tooltipXY, setTooltipXY] = useState<{ x: number; y: number } | null>(null);
+
+  const W = 640;
+  const H = 340;
+  const P = { top: 28, right: 28, bottom: 48, left: 56 };
+  const xD: [number, number] = [-5, 8];
+  const yD: [number, number] = [-3.5, 3.5];
+
+  const xScale = (tc: number) =>
+    P.left + ((tc - xD[0]) / (xD[1] - xD[0])) * (W - P.left - P.right);
+  const yScale = (edge: number) =>
+    P.top + (1 - (edge - yD[0]) / (yD[1] - yD[0])) * (H - P.top - P.bottom);
+
+  const zeroCrossTc = 1.1;
+  const zeroY = yScale(0);
+
+  const negPoints = [...edgeCurve.filter((p) => p.edge < 0), { tc: zeroCrossTc, edge: 0 }];
+  const posPoints = [{ tc: zeroCrossTc, edge: 0 }, ...edgeCurve.filter((p) => p.edge >= 0)];
+
+  const buildPath = (pts: EdgePoint[]) =>
+    pts
+      .map((p, i) => `${i === 0 ? "M" : "L"} ${xScale(p.tc).toFixed(1)} ${yScale(p.edge).toFixed(1)}`)
+      .join(" ");
+
+  const negPath = buildPath(negPoints);
+  const posPath = buildPath(posPoints);
+
+  const negArea = `${negPath} L ${xScale(edgeCurve[0].tc).toFixed(1)} ${zeroY.toFixed(1)} Z`;
+  const posArea = `${posPath} L ${xScale(edgeCurve[edgeCurve.length - 1].tc).toFixed(1)} ${zeroY.toFixed(1)} Z`;
+
+  const visibleMarkers: EdgePoint[] = edgeCurve.filter((p) =>
+    [-5, -3, -1, 1, 3, 5, 8].includes(p.tc),
+  );
+
+  const handleMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!svgRef.current || !wrapRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const wrapRect = wrapRef.current.getBoundingClientRect();
+    const scaleX = rect.width / W;
+    const scaleY = rect.height / H;
+    const x = (e.clientX - rect.left) / scaleX;
+    const tcApprox = xD[0] + ((x - P.left) / (W - P.left - P.right)) * (xD[1] - xD[0]);
+    const nearest = edgeCurve.reduce((best, p) =>
+      Math.abs(p.tc - tcApprox) < Math.abs(best.tc - tcApprox) ? p : best,
+    );
+    setHovered(nearest);
+    setTooltipXY({
+      x: xScale(nearest.tc) * scaleX + (rect.left - wrapRect.left),
+      y: yScale(nearest.edge) * scaleY + (rect.top - wrapRect.top),
+    });
+  };
+
+  return (
+    <div ref={wrapRef} className="edge-chart edge-chart-wrap">
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="xMidYMid meet"
+        onMouseMove={handleMove}
+        onMouseLeave={() => {
+          setHovered(null);
+          setTooltipXY(null);
+        }}
+        role="img"
+        aria-label="Player edge by true count — player edge grows roughly linearly with true count, crossing zero near TC +1"
+      >
+        <defs>
+          <linearGradient id="edge-fill-pos" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#34d399" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="edge-fill-neg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0" />
+            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.16" />
+          </linearGradient>
+        </defs>
+
+        {[-3, -2, -1, 1, 2, 3].map((y) => (
+          <g key={`grid-${y}`}>
+            <line
+              x1={P.left}
+              x2={W - P.right}
+              y1={yScale(y)}
+              y2={yScale(y)}
+              className="edge-chart__grid"
+            />
+            <text
+              x={P.left - 10}
+              y={yScale(y) + 4}
+              textAnchor="end"
+              className="edge-chart__tick-label"
+            >
+              {y > 0 ? `+${y}%` : `${y}%`}
+            </text>
+          </g>
+        ))}
+
+        <line
+          x1={P.left}
+          x2={W - P.right}
+          y1={zeroY}
+          y2={zeroY}
+          className="edge-chart__axis"
+          strokeWidth={1.2}
+        />
+        <text
+          x={P.left - 10}
+          y={zeroY + 4}
+          textAnchor="end"
+          className="edge-chart__tick-label"
+          style={{ fill: "var(--paper-muted)" }}
+        >
+          0%
+        </text>
+
+        {[-5, -3, 0, 3, 5, 8].map((x) => (
+          <g key={`xt-${x}`}>
+            <line
+              x1={xScale(x)}
+              x2={xScale(x)}
+              y1={H - P.bottom}
+              y2={H - P.bottom + 6}
+              className="edge-chart__axis"
+            />
+            <text
+              x={xScale(x)}
+              y={H - P.bottom + 22}
+              textAnchor="middle"
+              className="edge-chart__tick-label"
+            >
+              {x > 0 ? `TC +${x}` : `TC ${x}`}
+            </text>
+          </g>
+        ))}
+
+        <path d={negArea} fill="url(#edge-fill-neg)" />
+        <path d={posArea} fill="url(#edge-fill-pos)" />
+
+        <motion.path
+          d={negPath}
+          fill="none"
+          stroke="#f59e0b"
+          strokeWidth={2.4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={reduced ? undefined : { pathLength: 0 }}
+          whileInView={reduced ? undefined : { pathLength: 1 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 1.1, ease: "easeOut" }}
+        />
+        <motion.path
+          d={posPath}
+          fill="none"
+          stroke="#34d399"
+          strokeWidth={2.4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={reduced ? undefined : { pathLength: 0 }}
+          whileInView={reduced ? undefined : { pathLength: 1 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 1.1, ease: "easeOut", delay: 0.55 }}
+        />
+
+        {visibleMarkers.map((p) => {
+          const isHovered = hovered?.tc === p.tc;
+          return (
+            <motion.circle
+              key={`m-${p.tc}`}
+              cx={xScale(p.tc)}
+              cy={yScale(p.edge)}
+              r={isHovered ? 6 : 3.5}
+              fill={p.edge >= 0 ? "#34d399" : "#f59e0b"}
+              stroke="var(--ink-1)"
+              strokeWidth={2}
+              initial={reduced ? undefined : { scale: 0, opacity: 0 }}
+              whileInView={reduced ? undefined : { scale: 1, opacity: 1 }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{
+                duration: 0.3,
+                delay: (reduced ? 0 : 1.4) + (p.tc + 5) * 0.04,
+                ease: "easeOut",
+              }}
+              style={{ transition: "r 200ms ease" }}
+            />
+          );
+        })}
+
+        {hovered && (
+          <line
+            x1={xScale(hovered.tc)}
+            x2={xScale(hovered.tc)}
+            y1={P.top}
+            y2={H - P.bottom}
+            stroke="var(--paper-faint)"
+            strokeDasharray="3 4"
+            strokeWidth={1}
+          />
+        )}
+      </svg>
+
+      {hovered && tooltipXY && (
+        <div
+          className="edge-chart__tooltip"
+          style={{ left: `${tooltipXY.x}px`, top: `${tooltipXY.y - 12}px` }}
+        >
+          <div className="edge-chart__tooltip-tc">
+            TC {hovered.tc > 0 ? `+${hovered.tc}` : hovered.tc}
+          </div>
+          <div
+            className="edge-chart__tooltip-edge"
+            style={{
+              color: hovered.edge >= 0 ? "var(--emerald)" : "var(--amber)",
+            }}
+          >
+            {hovered.edge > 0 ? "+" : ""}
+            {hovered.edge.toFixed(2)}%
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function EdgeRowLine({ row }: { row: EdgeRow }) {
   const pct = Math.max(-5, Math.min(5, row.edge));
   const width = `${(Math.abs(pct) / 5) * 50}%`;
@@ -1153,7 +1498,7 @@ function MathSection() {
       <div className="site-shell">
         <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
           <div>
-            <p className="text-chapter mb-5">§ V · The Math</p>
+            <ChapterMark roman="V" title="The Math" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
               Where the edge actually lives.
             </h2>
@@ -1198,13 +1543,10 @@ function MathSection() {
                 6 deck · S17 · DAS
               </p>
             </div>
-            <div>
-              {edgeTable.map((row) => (
-                <EdgeRowLine key={row.tc} row={row} />
-              ))}
-            </div>
+            <EdgeChart />
             <p className="text-paper-muted text-sm mt-6 text-pretty">
-              House above zero, player below. The crossover is the point of the craft.
+              Below zero, the house owns the table. Above zero, you do. The crossover sits
+              just above TC +1 — bet-sizing territory begins there.
             </p>
           </div>
         </div>
@@ -1219,7 +1561,7 @@ function SimulatorSection() {
       <div className="site-shell">
         <div className="grid md:grid-cols-[1.1fr,1fr] gap-16 items-center">
           <div>
-            <p className="text-chapter mb-5">§ VI · The Dojo Floor</p>
+            <ChapterMark roman="VI" title="The Dojo Floor" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance mb-8">
               A casino, calibrated.
             </h2>
@@ -1292,7 +1634,7 @@ function BeltsSection() {
       <div className="site-shell">
         <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
           <div>
-            <p className="text-chapter mb-5">§ VII · The Journey</p>
+            <ChapterMark roman="VII" title="The Journey" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
               From student to Grand Sensei.
             </h2>
@@ -1344,7 +1686,7 @@ function ReferenceSection() {
       <div className="site-shell">
         <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
           <div>
-            <p className="text-chapter mb-5">§ VIII · The Reference Library</p>
+            <ChapterMark roman="VIII" title="The Reference Library" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
               Ten tools.
               <br />
@@ -1388,7 +1730,7 @@ function BadgesSection() {
       <div className="site-shell">
         <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
           <div>
-            <p className="text-chapter mb-5">§ IX · The Badges</p>
+            <ChapterMark roman="IX" title="The Badges" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
               Sixty-five ways
               <br />
@@ -1442,7 +1784,7 @@ function ComparisonSection() {
       <div className="site-shell">
         <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
           <div>
-            <p className="text-chapter mb-5">§ X · vs The Usual Path</p>
+            <ChapterMark roman="X" title="vs The Usual Path" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
               A short, honest comparison.
             </h2>
@@ -1491,7 +1833,7 @@ function PricingSection() {
       <div className="site-shell">
         <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
           <div>
-            <p className="text-chapter mb-5">§ XI · Tuition</p>
+            <ChapterMark roman="XI" title="Tuition" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
               Free where it should be.
               <br />
@@ -1586,7 +1928,7 @@ function ScreenshotsSection() {
       <div className="site-shell">
         <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
           <div>
-            <p className="text-chapter mb-5">§ XII · Surfaces</p>
+            <ChapterMark roman="XII" title="Surfaces" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
               See where the reps happen.
             </h2>
@@ -1664,7 +2006,7 @@ function TestimonialsSection() {
   return (
     <section className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <p className="text-chapter mb-10">§ XIII · Voices</p>
+        <ChapterMark roman="XIII" title="Voices" className="mb-10" />
         <div className="grid md:grid-cols-2 gap-x-14 md:gap-x-20 gap-y-14 md:gap-y-16">
           {testimonials.map((t, i) => (
             <Reveal key={t.author} delay={i * 80}>
@@ -1743,7 +2085,7 @@ function FAQSection() {
     <section id="faq" className="section-rhythm">
       <div className="site-shell max-w-4xl mx-auto">
         <div className="mb-12">
-          <p className="text-chapter mb-5">§ XIV · Questions</p>
+          <ChapterMark roman="XIV" title="Questions" className="mb-5" />
           <h2 className="font-display text-display-lg text-paper text-balance">
             Common doubts, straight answers.
           </h2>
@@ -1768,7 +2110,7 @@ function FinalCTA() {
     <section className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
         <div className="py-16 md:py-24 text-center">
-          <p className="text-chapter mb-6">§ XV · Take the first rep</p>
+          <ChapterMark roman="XV" title="Take the first rep" centered className="mb-6" />
           <h2 className="font-display text-display-xl text-paper text-balance max-w-4xl mx-auto">
             The edge is legal.
             <br />

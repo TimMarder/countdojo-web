@@ -22,9 +22,25 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://countdojo.com"),
   title: "Count Dojo — The serious card counter's training ground",
   description:
     "Six units. Thirty lessons. Nineteen drill types. Seven counting systems. A casino simulator calibrated to real table rules. Count Dojo teaches card counting as the craft it is — from Blue Belt to Dojo Legend.",
+  openGraph: {
+    type: "website",
+    siteName: "Count Dojo",
+    title: "Count Dojo — An education in advantage play",
+    description:
+      "Six units, 30+ lessons, 19 drill types, 7 counting systems, a calibrated casino simulator. A serious craft, finally taught like one.",
+    url: "https://countdojo.com",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Count Dojo — An education in advantage play",
+    description:
+      "Six units, 30+ lessons, 19 drill types, 7 counting systems. A serious craft, finally taught like one.",
+  },
 };
 
 export default function RootLayout({

@@ -603,6 +603,128 @@ a {
 }
 
 /* =========================================================
+   Playing card — hero fan
+   ========================================================= */
+.playing-card {
+  position: relative;
+  width: clamp(100px, 12vw, 150px);
+  aspect-ratio: 5 / 7;
+  border-radius: 12px;
+  background: linear-gradient(160deg, #faf7ee 0%, #e9e2ce 100%);
+  color: #111113;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 36px 72px -20px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.02);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: var(--font-serif);
+  font-variation-settings: "SOFT" 50, "opsz" 96;
+  letter-spacing: -0.01em;
+  will-change: transform;
+}
+
+.playing-card[data-suit="h"],
+.playing-card[data-suit="d"] {
+  color: #b91c1c;
+}
+
+.playing-card__corner {
+  font-size: clamp(1.15rem, 1.5vw, 1.6rem);
+  line-height: 1;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.playing-card__corner--bottom {
+  align-self: flex-end;
+  transform: rotate(180deg);
+}
+
+.playing-card__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(2.4rem, 4vw, 4rem);
+  line-height: 1;
+  opacity: 0.88;
+  pointer-events: none;
+}
+
+.playing-card__suit {
+  line-height: 1;
+}
+
+/* =========================================================
+   Edge chart
+   ========================================================= */
+.edge-chart-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.edge-chart svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.edge-chart__axis {
+  stroke: var(--rule-strong);
+  stroke-width: 1;
+}
+
+.edge-chart__grid {
+  stroke: var(--rule);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.edge-chart__tick-label {
+  font-family: var(--font-mono-stack);
+  font-size: 11px;
+  fill: var(--paper-faint);
+  letter-spacing: 0.04em;
+}
+
+.edge-chart__tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  background: var(--ink-0);
+  border: 1px solid var(--rule-strong);
+  padding: 10px 14px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 5;
+  box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.6);
+}
+
+.edge-chart__tooltip-tc {
+  font-family: var(--font-mono-stack);
+  font-size: 0.64rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--paper-faint);
+}
+
+.edge-chart__tooltip-edge {
+  font-family: var(--font-serif);
+  font-variation-settings: "SOFT" 80, "opsz" 48;
+  font-size: 1.25rem;
+  font-feature-settings: "tnum", "lnum";
+}
+
+/* =========================================================
    Live-count demo cards
    ========================================================= */
 .count-card {
