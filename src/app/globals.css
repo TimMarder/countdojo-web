@@ -673,12 +673,95 @@ a {
   margin-left: -48px;
   margin-top: -67px;
   transform-style: preserve-3d;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   will-change: transform, opacity;
 }
 
-.helix-card .playing-card {
+.helix-card-face,
+.helix-card-back {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  will-change: opacity;
+}
+
+.helix-card-face {
+  transform: translateZ(1px);
+}
+
+.helix-card-back {
+  transform: rotateY(180deg) translateZ(1px);
+  background:
+    radial-gradient(90% 110% at 50% 0%, rgba(52, 211, 153, 0.22) 0%, transparent 55%),
+    linear-gradient(160deg, #10533a 0%, #0a3d2b 48%, #072a1d 100%);
+  border: 1px solid rgba(245, 241, 232, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(245, 241, 232, 0.14),
+    inset 0 0 0 1px rgba(10, 10, 11, 0.4),
+    0 30px 60px -20px rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.helix-card-back::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(245, 241, 232, 0.28);
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.helix-card-back::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(245, 241, 232, 0.1) 0 1px,
+      transparent 1px 7px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(245, 241, 232, 0.1) 0 1px,
+      transparent 1px 7px
+    );
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.helix-card-back__glyph {
+  font-family: var(--font-serif);
+  font-variation-settings: "SOFT" 100, "opsz" 144;
+  font-size: 2.5rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: rgba(245, 241, 232, 0.88);
+  text-shadow:
+    0 0 12px rgba(52, 211, 153, 0.5),
+    0 0 30px rgba(52, 211, 153, 0.22),
+    0 1px 0 rgba(0, 0, 0, 0.4);
+  position: relative;
+  z-index: 2;
+}
+
+.helix-card-back__mono {
+  position: absolute;
+  bottom: 9px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-mono-stack);
+  font-size: 0.36rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(245, 241, 232, 0.72);
+  z-index: 2;
+}
+
+.helix-card-face .playing-card {
   width: 100%;
   height: 100%;
   border-radius: 10px;
@@ -689,11 +772,11 @@ a {
     0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
-.helix-card .playing-card__corner {
+.helix-card-face .playing-card__corner {
   font-size: 0.95rem;
 }
 
-.helix-card .playing-card__center {
+.helix-card-face .playing-card__center {
   font-size: 2.4rem;
 }
 

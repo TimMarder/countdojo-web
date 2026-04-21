@@ -772,11 +772,13 @@ function HelixCard({
   index,
   card,
   progress,
+  sceneRotateY,
   reduced,
 }: {
   index: number;
   card: CinematicCardData;
   progress: MotionValue<number>;
+  sceneRotateY: MotionValue<number>;
   reduced: boolean;
 }) {
   const total = CINEMATIC_CARDS.length;
@@ -816,6 +818,20 @@ function HelixCard({
     [0, 0.3, 1, 1, 1, s3.opacity],
   );
 
+  const worldRotY = useTransform<number, number>(
+    [rotateY, sceneRotateY],
+    ([cardR, sceneR]) => {
+      const total = cardR + sceneR;
+      return ((total % 360) + 360) % 360;
+    },
+  );
+  const faceOpacity = useTransform<number, number>(worldRotY, (r) =>
+    r < 90 || r > 270 ? 1 : 0,
+  );
+  const backOpacity = useTransform<number, number>(worldRotY, (r) =>
+    r >= 90 && r <= 270 ? 1 : 0,
+  );
+
   if (reduced) {
     return (
       <div
@@ -825,7 +841,7 @@ function HelixCard({
           opacity: s1.opacity,
         }}
       >
-        <PlayingCardVisual rank={card.rank} suit={card.suit} />
+        <HelixCardFaces card={card} faceOpacity={1} backOpacity={0} />
       </div>
     );
   }
@@ -835,8 +851,30 @@ function HelixCard({
       className="helix-card"
       style={{ x, y, z, rotateY, rotateZ, opacity }}
     >
-      <PlayingCardVisual rank={card.rank} suit={card.suit} />
+      <HelixCardFaces card={card} faceOpacity={faceOpacity} backOpacity={backOpacity} />
     </motion.div>
+  );
+}
+
+function HelixCardFaces({
+  card,
+  faceOpacity,
+  backOpacity,
+}: {
+  card: CinematicCardData;
+  faceOpacity: MotionValue<number> | number;
+  backOpacity: MotionValue<number> | number;
+}) {
+  return (
+    <>
+      <motion.div className="helix-card-face" style={{ opacity: faceOpacity }}>
+        <PlayingCardVisual rank={card.rank} suit={card.suit} />
+      </motion.div>
+      <motion.div className="helix-card-back" style={{ opacity: backOpacity }} aria-hidden>
+        <span className="helix-card-back__glyph">♠</span>
+        <span className="helix-card-back__mono">Count Dojo</span>
+      </motion.div>
+    </>
   );
 }
 
@@ -931,6 +969,7 @@ function CinematicSequence() {
                   index={i}
                   card={card}
                   progress={scrollYProgress}
+                  sceneRotateY={sceneRotateY}
                   reduced
                 />
               ))}
@@ -1007,6 +1046,7 @@ function CinematicSequence() {
                 index={i}
                 card={card}
                 progress={scrollYProgress}
+                sceneRotateY={sceneRotateY}
                 reduced={false}
               />
             ))}
