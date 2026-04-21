@@ -2,7 +2,13 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from "motion/react";
 import { SiteHeader } from "./_components/SiteHeader";
 import { SiteFooter } from "./_components/SiteFooter";
 
@@ -688,6 +694,410 @@ function HeroCardFan() {
         </motion.div>
       ))}
     </div>
+  );
+}
+
+type CinematicCardData = { rank: string; suit: Card["suit"] };
+
+const CINEMATIC_CARDS: CinematicCardData[] = [
+  { rank: "A", suit: "s" },
+  { rank: "2", suit: "h" },
+  { rank: "3", suit: "d" },
+  { rank: "4", suit: "c" },
+  { rank: "5", suit: "s" },
+  { rank: "6", suit: "h" },
+  { rank: "7", suit: "d" },
+  { rank: "8", suit: "c" },
+  { rank: "9", suit: "s" },
+  { rank: "10", suit: "h" },
+  { rank: "J", suit: "d" },
+  { rank: "Q", suit: "c" },
+  { rank: "K", suit: "s" },
+];
+
+type Pose = {
+  x: number;
+  y: number;
+  z: number;
+  rotateY: number;
+  rotateZ: number;
+  opacity: number;
+};
+
+function fanPose(i: number, total: number): Pose {
+  const center = (total - 1) / 2;
+  const offset = i - center;
+  const spread = 62;
+  return {
+    x: offset * spread,
+    y: Math.abs(offset) * 6,
+    z: -Math.abs(offset) * 26,
+    rotateY: offset * 3.5,
+    rotateZ: offset * 4,
+    opacity: 1,
+  };
+}
+
+function helixPose(i: number, total: number): Pose {
+  const angle = (i / total) * Math.PI * 2;
+  const radius = 300;
+  const verticalSpan = 340;
+  return {
+    x: Math.cos(angle) * radius,
+    y: (i - (total - 1) / 2) * (verticalSpan / total),
+    z: Math.sin(angle) * radius,
+    rotateY: -(angle * 180) / Math.PI,
+    rotateZ: 0,
+    opacity: 1,
+  };
+}
+
+function convergePose(i: number, total: number): Pose {
+  if (i === 0) {
+    return { x: 0, y: -16, z: 260, rotateY: 0, rotateZ: 0, opacity: 1 };
+  }
+  const side = i % 2 === 0 ? 1 : -1;
+  const rank = i;
+  return {
+    x: side * rank * 1.6,
+    y: (i - total / 2) * 1.4,
+    z: -rank * 22 - 40,
+    rotateY: (i - total / 2) * 2.4,
+    rotateZ: side * Math.min(rank * 0.8, 6),
+    opacity: Math.max(0.06, 0.4 - rank * 0.025),
+  };
+}
+
+function HelixCard({
+  index,
+  card,
+  progress,
+  reduced,
+}: {
+  index: number;
+  card: CinematicCardData;
+  progress: MotionValue<number>;
+  reduced: boolean;
+}) {
+  const total = CINEMATIC_CARDS.length;
+  const s1 = fanPose(index, total);
+  const s2 = helixPose(index, total);
+  const s3 = convergePose(index, total);
+  const flyInOffset = (index - total / 2) * 14;
+
+  const x = useTransform(
+    progress,
+    [0, 0.1, 0.32, 0.58, 0.82, 1],
+    [s1.x - 900 + flyInOffset, s1.x, s1.x, s2.x, s3.x, s3.x],
+  );
+  const y = useTransform(
+    progress,
+    [0, 0.1, 0.32, 0.58, 0.82, 1],
+    [s1.y + 220, s1.y, s1.y, s2.y, s3.y, s3.y],
+  );
+  const z = useTransform(
+    progress,
+    [0, 0.1, 0.32, 0.58, 0.82, 1],
+    [s1.z - 400, s1.z, s1.z, s2.z, s3.z, s3.z],
+  );
+  const rotateY = useTransform(
+    progress,
+    [0, 0.1, 0.32, 0.58, 0.82, 1],
+    [s1.rotateY - 30, s1.rotateY, s1.rotateY, s2.rotateY, s3.rotateY, s3.rotateY],
+  );
+  const rotateZ = useTransform(
+    progress,
+    [0, 0.1, 0.32, 0.58, 0.82, 1],
+    [s1.rotateZ - 20, s1.rotateZ, s1.rotateZ, s2.rotateZ, s3.rotateZ, s3.rotateZ],
+  );
+  const opacity = useTransform(
+    progress,
+    [0, 0.06, 0.14, 0.58, 0.78, 0.9],
+    [0, 0.3, 1, 1, 1, s3.opacity],
+  );
+
+  if (reduced) {
+    return (
+      <div
+        className="helix-card"
+        style={{
+          transform: `translate3d(${s1.x}px, ${s1.y}px, ${s1.z}px) rotateY(${s1.rotateY}deg) rotateZ(${s1.rotateZ}deg)`,
+          opacity: s1.opacity,
+        }}
+      >
+        <PlayingCardVisual rank={card.rank} suit={card.suit} />
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      className="helix-card"
+      style={{ x, y, z, rotateY, rotateZ, opacity }}
+    >
+      <PlayingCardVisual rank={card.rank} suit={card.suit} />
+    </motion.div>
+  );
+}
+
+function CinematicSuit({
+  glyph,
+  top,
+  left,
+  size,
+  rotateFrom,
+  rotateTo,
+  progress,
+}: {
+  glyph: string;
+  top: string;
+  left: string;
+  size: string;
+  rotateFrom: number;
+  rotateTo: number;
+  progress: MotionValue<number>;
+}) {
+  const rotate = useTransform(progress, [0, 1], [rotateFrom, rotateTo]);
+  const y = useTransform(progress, [0, 1], [0, -40]);
+  const o = useTransform(progress, [0, 0.3, 0.65, 1], [0.025, 0.09, 0.12, 0.04]);
+  return (
+    <motion.span
+      className="cinematic-suit"
+      style={{
+        top,
+        left,
+        fontSize: size,
+        rotate,
+        y,
+        opacity: o,
+      }}
+      aria-hidden
+    >
+      {glyph}
+    </motion.span>
+  );
+}
+
+function CinematicSequence() {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion() ?? false;
+
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end end"],
+  });
+
+  const sceneRotateY = useTransform(
+    scrollYProgress,
+    [0.32, 0.58, 0.82],
+    [0, 360, 360],
+  );
+  const sceneRotateX = useTransform(
+    scrollYProgress,
+    [0, 0.32, 0.58, 0.82, 1],
+    [6, 0, -4, -8, -8],
+  );
+  const sceneScale = useTransform(
+    scrollYProgress,
+    [0, 0.15, 0.45, 0.82, 1],
+    [0.82, 1, 1.05, 1, 1.02],
+  );
+
+  const stage1Opacity = useTransform(
+    scrollYProgress,
+    [0, 0.04, 0.22, 0.3],
+    [0, 1, 1, 0],
+  );
+  const stage1Y = useTransform(scrollYProgress, [0, 0.3], [20, -20]);
+  const stage2Opacity = useTransform(
+    scrollYProgress,
+    [0.35, 0.42, 0.58, 0.66],
+    [0, 1, 1, 0],
+  );
+  const stage2Y = useTransform(scrollYProgress, [0.35, 0.66], [20, -20]);
+  const stage3Opacity = useTransform(
+    scrollYProgress,
+    [0.7, 0.78, 0.94, 1],
+    [0, 1, 1, 1],
+  );
+  const stage3Y = useTransform(scrollYProgress, [0.7, 1], [20, 0]);
+
+  const scrollHintOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.08, 0.18],
+    [0.8, 0.8, 0],
+  );
+
+  const [activeStage, setActiveStage] = useState(0);
+  useEffect(() => {
+    const unsub = scrollYProgress.on("change", (v) => {
+      if (v < 0.32) setActiveStage(0);
+      else if (v < 0.66) setActiveStage(1);
+      else setActiveStage(2);
+    });
+    return () => unsub();
+  }, [scrollYProgress]);
+
+  if (reduced) {
+    return (
+      <section className="cinematic-section" aria-hidden>
+        <div className="cinematic-sticky">
+          <div className="cinematic-perspective">
+            <div className="cinematic-scene" style={{ transform: "rotateX(4deg)" }}>
+              {CINEMATIC_CARDS.map((card, i) => (
+                <HelixCard
+                  key={`${card.rank}${card.suit}`}
+                  index={i}
+                  card={card}
+                  progress={scrollYProgress}
+                  reduced
+                />
+              ))}
+            </div>
+          </div>
+          <div className="cinematic-stages">
+            <div className="cinematic-stage" style={{ opacity: 1 }}>
+              <p className="cinematic-chapter">Act I · II · III</p>
+              <h2 className="cinematic-headline">
+                Thirteen ranks, <em>one legal edge.</em>
+              </h2>
+              <p className="cinematic-sub">
+                The count lives in what remains. The math is simple. The work is yours.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section ref={ref} className="cinematic-section" aria-label="Cinematic intro">
+      <div className="cinematic-sticky">
+        <CinematicSuit
+          glyph="♠"
+          top="12%"
+          left="8%"
+          size="clamp(8rem, 18vw, 18rem)"
+          rotateFrom={-8}
+          rotateTo={40}
+          progress={scrollYProgress}
+        />
+        <CinematicSuit
+          glyph="♥"
+          top="62%"
+          left="82%"
+          size="clamp(6rem, 14vw, 14rem)"
+          rotateFrom={12}
+          rotateTo={-28}
+          progress={scrollYProgress}
+        />
+        <CinematicSuit
+          glyph="♦"
+          top="68%"
+          left="10%"
+          size="clamp(6rem, 13vw, 13rem)"
+          rotateFrom={-18}
+          rotateTo={24}
+          progress={scrollYProgress}
+        />
+        <CinematicSuit
+          glyph="♣"
+          top="14%"
+          left="80%"
+          size="clamp(8rem, 16vw, 16rem)"
+          rotateFrom={10}
+          rotateTo={-34}
+          progress={scrollYProgress}
+        />
+
+        <div className="cinematic-perspective">
+          <motion.div
+            className="cinematic-scene"
+            style={{
+              rotateY: sceneRotateY,
+              rotateX: sceneRotateX,
+              scale: sceneScale,
+            }}
+          >
+            {CINEMATIC_CARDS.map((card, i) => (
+              <HelixCard
+                key={`${card.rank}${card.suit}`}
+                index={i}
+                card={card}
+                progress={scrollYProgress}
+                reduced={false}
+              />
+            ))}
+          </motion.div>
+        </div>
+
+        <div className="cinematic-stages">
+          <motion.div
+            className="cinematic-stage"
+            style={{ opacity: stage1Opacity, y: stage1Y }}
+          >
+            <p className="cinematic-chapter">Act I · The Deal</p>
+            <h2 className="cinematic-headline">
+              Thirteen ranks.
+              <br />
+              Four suits.
+            </h2>
+            <p className="cinematic-sub">
+              One legal edge worth mastering — hidden in the patterns the cards leave behind.
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="cinematic-stage"
+            style={{ opacity: stage2Opacity, y: stage2Y }}
+          >
+            <p className="cinematic-chapter">Act II · The Helix</p>
+            <h2 className="cinematic-headline">
+              The count lives in
+              <br />
+              <em>what remains.</em>
+            </h2>
+            <p className="cinematic-sub">
+              Not in the card you just saw. In every card that has not come yet.
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="cinematic-stage"
+            style={{ opacity: stage3Opacity, y: stage3Y }}
+          >
+            <p className="cinematic-chapter">Act III · The Edge</p>
+            <h2 className="cinematic-headline">
+              The edge is legal.
+              <br />
+              <em>The work is yours.</em>
+            </h2>
+            <p className="cinematic-sub">
+              The math is simple. Everything below this line is how we teach it.
+            </p>
+          </motion.div>
+        </div>
+
+        <div className="cinematic-progress" aria-hidden>
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              className="cinematic-progress__dot"
+              data-active={activeStage === i}
+            />
+          ))}
+        </div>
+
+        <motion.div
+          className="cinematic-scroll-hint"
+          style={{ opacity: scrollHintOpacity }}
+          aria-hidden
+        >
+          Scroll
+        </motion.div>
+      </div>
+    </section>
   );
 }
 
@@ -2148,6 +2558,7 @@ export default function Home() {
       <SiteHeader links={homeLinks} />
       <main>
         <HeroSection />
+        <CinematicSequence />
         <LiveCountDemoSection />
         <ProofStrip />
         <ThorpEpigraph />
