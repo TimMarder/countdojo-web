@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export function SiteFooter() {
@@ -7,12 +8,13 @@ export function SiteFooter() {
         <div className="grid md:grid-cols-[1.4fr,1fr,1fr] gap-10 md:gap-16">
           <div>
             <Link href="/" className="inline-block" aria-label="Count Dojo home">
-              <span
-                className="font-display text-3xl text-paper"
-                style={{ fontVariationSettings: '"SOFT" 100, "opsz" 72' }}
-              >
-                Count Dojo
-              </span>
+              <Image
+                src="/images/Count Dojo Banner Transparent Background NO BORDERS.png"
+                alt="Count Dojo"
+                width={320}
+                height={90}
+                className="h-14 w-auto"
+              />
             </Link>
             <p className="text-paper-muted mt-5 text-sm max-w-sm text-pretty">
               A structured training ground for card counters. From Blue Belt to Dojo Legend —

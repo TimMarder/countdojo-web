@@ -638,15 +638,77 @@ type PlayingCardFace = {
   suit: "s" | "h" | "d" | "c";
 };
 
+const PIP_LAYOUTS: Record<string, Array<[number, number, boolean?]>> = {
+  "2": [[50, 12], [50, 88, true]],
+  "3": [[50, 12], [50, 50], [50, 88, true]],
+  "4": [
+    [25, 14], [75, 14],
+    [25, 86, true], [75, 86, true],
+  ],
+  "5": [
+    [25, 14], [75, 14],
+    [50, 50],
+    [25, 86, true], [75, 86, true],
+  ],
+  "6": [
+    [25, 14], [75, 14],
+    [25, 50], [75, 50],
+    [25, 86, true], [75, 86, true],
+  ],
+  "7": [
+    [25, 14], [75, 14],
+    [50, 32],
+    [25, 50], [75, 50],
+    [25, 86, true], [75, 86, true],
+  ],
+  "8": [
+    [25, 14], [75, 14],
+    [50, 32],
+    [25, 50], [75, 50],
+    [50, 68, true],
+    [25, 86, true], [75, 86, true],
+  ],
+  "9": [
+    [25, 14], [75, 14],
+    [25, 36], [75, 36],
+    [50, 50],
+    [25, 64, true], [75, 64, true],
+    [25, 86, true], [75, 86, true],
+  ],
+  "10": [
+    [25, 14], [75, 14],
+    [50, 26],
+    [25, 38], [75, 38],
+    [25, 62, true], [75, 62, true],
+    [50, 74, true],
+    [25, 86, true], [75, 86, true],
+  ],
+};
+
 function PlayingCardVisual({ rank, suit }: PlayingCardFace) {
   const glyph = SUIT_GLYPH[suit];
+  const pips = PIP_LAYOUTS[rank];
   return (
     <div className="playing-card" data-suit={suit} aria-hidden>
       <span className="playing-card__corner">
         <span>{rank}</span>
         <span className="playing-card__suit">{glyph}</span>
       </span>
-      <span className="playing-card__center">{glyph}</span>
+      {pips ? (
+        <div className="playing-card__pips">
+          {pips.map(([x, y, flip], i) => (
+            <span
+              key={i}
+              className={`playing-card__pip ${flip ? "playing-card__pip--flip" : ""}`}
+              style={{ left: `${x}%`, top: `${y}%` }}
+            >
+              {glyph}
+            </span>
+          ))}
+        </div>
+      ) : (
+        <span className="playing-card__center">{glyph}</span>
+      )}
       <span className="playing-card__corner playing-card__corner--bottom">
         <span>{rank}</span>
         <span className="playing-card__suit">{glyph}</span>
@@ -1157,18 +1219,25 @@ type Card = { rank: string; suit: "s" | "h" | "d" | "c" };
 const SUIT_GLYPH: Record<Card["suit"], string> = { s: "♠", h: "♥", d: "♦", c: "♣" };
 
 const liveDemo: Card[] = [
-  { rank: "A", suit: "s" },
-  { rank: "7", suit: "h" },
-  { rank: "5", suit: "d" },
   { rank: "K", suit: "c" },
-  { rank: "3", suit: "s" },
-  { rank: "9", suit: "h" },
-  { rank: "Q", suit: "d" },
-  { rank: "2", suit: "c" },
-  { rank: "J", suit: "s" },
-  { rank: "4", suit: "h" },
-  { rank: "8", suit: "d" },
+  { rank: "9", suit: "s" },
+  { rank: "J", suit: "h" },
+  { rank: "3", suit: "c" },
+  { rank: "5", suit: "s" },
+  { rank: "2", suit: "h" },
+  { rank: "7", suit: "d" },
+  { rank: "A", suit: "s" },
+  { rank: "4", suit: "d" },
   { rank: "6", suit: "c" },
+  { rank: "5", suit: "d" },
+  { rank: "3", suit: "d" },
+  { rank: "10", suit: "c" },
+  { rank: "Q", suit: "h" },
+  { rank: "8", suit: "s" },
+  { rank: "K", suit: "d" },
+  { rank: "6", suit: "h" },
+  { rank: "4", suit: "c" },
+  { rank: "A", suit: "d" },
 ];
 
 function hiLoValue(rank: string): number {
@@ -1196,7 +1265,7 @@ function LiveCountDemoSection() {
         }
         return d + 1;
       });
-    }, 950);
+    }, 720);
     return () => clearInterval(id);
   }, [playing]);
 
