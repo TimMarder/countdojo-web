@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   motion,
+  useMotionValueEvent,
   useReducedMotion,
   useScroll,
   useTransform,
@@ -874,11 +875,10 @@ function HelixCard({
     [0, 0.1, 0.32, 0.58, 0.82, 1],
     [s1.rotateZ - 20, s1.rotateZ, s1.rotateZ, s2.rotateZ, s3.rotateZ, s3.rotateZ],
   );
-  const opacity = useTransform(
-    progress,
-    [0, 0.06, 0.14, 0.58, 0.78, 0.9],
-    [0, 0.3, 1, 1, 1, s3.opacity],
-  );
+  const [act3Fade, setAct3Fade] = useState(false);
+  useMotionValueEvent(progress, "change", (v) => {
+    setAct3Fade(v > 0.78);
+  });
 
   const worldRotY = useTransform<number, number>(
     [rotateY, sceneRotateY],
@@ -911,7 +911,15 @@ function HelixCard({
   return (
     <motion.div
       className="helix-card"
-      style={{ x, y, z, rotateY, rotateZ, opacity }}
+      data-act3={act3Fade ? "true" : "false"}
+      style={{
+        x,
+        y,
+        z,
+        rotateY,
+        rotateZ,
+        ["--helix-fade-target" as string]: s3.opacity,
+      }}
     >
       <HelixCardFaces card={card} faceOpacity={faceOpacity} backOpacity={backOpacity} />
     </motion.div>
@@ -1225,19 +1233,16 @@ const liveDemo: Card[] = [
   { rank: "3", suit: "c" },
   { rank: "5", suit: "s" },
   { rank: "2", suit: "h" },
-  { rank: "7", suit: "d" },
-  { rank: "A", suit: "s" },
   { rank: "4", suit: "d" },
   { rank: "6", suit: "c" },
   { rank: "5", suit: "d" },
-  { rank: "3", suit: "d" },
+  { rank: "A", suit: "s" },
   { rank: "10", suit: "c" },
   { rank: "Q", suit: "h" },
-  { rank: "8", suit: "s" },
+  { rank: "7", suit: "d" },
   { rank: "K", suit: "d" },
   { rank: "6", suit: "h" },
-  { rank: "4", suit: "c" },
-  { rank: "A", suit: "d" },
+  { rank: "8", suit: "c" },
 ];
 
 function hiLoValue(rank: string): number {
