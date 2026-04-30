@@ -507,6 +507,12 @@ export default function IntelAdminPage() {
   const [submitterEmails, setSubmitterEmails] = useState<
     Record<string, string>
   >({});
+  // Map of intel.id -> live display name (resolved client-side via the
+  // public get_intel_submitter_usernames RPC). Preferred over the
+  // submitted_by snapshot stored on the intel row.
+  const [submitterUsernames, setSubmitterUsernames] = useState<
+    Record<string, string>
+  >({});
   const [counts, setCounts] = useState<StatusCounts>({
     pending: 0,
     approved: 0,
@@ -620,7 +626,32 @@ export default function IntelAdminPage() {
     const intelIds = rows.map((r) => r.id);
     if (intelIds.length === 0) {
       setSubmitterEmails({});
+      setSubmitterUsernames({});
     } else {
+      // Live display names from user_progress -- public RPC, no auth needed.
+      // Failures here are non-fatal; we fall back to submitted_by.
+      try {
+        const { data: usernameRows, error: usernameErr } = await supabase.rpc(
+          "get_intel_submitter_usernames",
+          { p_intel_ids: intelIds }
+        );
+        if (!usernameErr && Array.isArray(usernameRows)) {
+          const map: Record<string, string> = {};
+          for (const r of usernameRows as Array<{
+            intel_id: string;
+            username: string | null;
+          }>) {
+            if (r.username && r.username.trim().length > 0)
+              map[r.intel_id] = r.username;
+          }
+          setSubmitterUsernames(map);
+        } else {
+          setSubmitterUsernames({});
+        }
+      } catch {
+        setSubmitterUsernames({});
+      }
+
       try {
         const res = await fetch("/api/admin/intel-emails", {
           method: "POST",
@@ -893,21 +924,32 @@ export default function IntelAdminPage() {
                       </h3>
                       <p className="text-xs text-slate-400 mt-0.5">
                         by {(() => {
-                          const name = (item.submitted_by ?? "").trim();
+                          // Prefer the live display name from user_progress
+                          // over the submitted_by snapshot. Show email
+                          // alongside it for admin context.
+                          const live = (
+                            submitterUsernames[item.id] ?? ""
+                          ).trim();
+                          const stored = (item.submitted_by ?? "").trim();
+                          const name =
+                            live.length > 0
+                              ? live
+                              : stored.length > 0 &&
+                                  stored.toLowerCase() !== "anonymous"
+                                ? stored
+                                : "";
                           const email =
                             submitterEmails[item.id] ??
                             item.submitter_email ??
                             "";
-                          const hasName =
-                            name.length > 0 && name.toLowerCase() !== "anonymous";
-                          if (hasName && email)
+                          if (name && email)
                             return (
                               <>
                                 {name}{" "}
                                 <span className="text-slate-500">({email})</span>
                               </>
                             );
-                          if (hasName) return name;
+                          if (name) return name;
                           if (email) return email;
                           return "Anonymous";
                         })()}
