@@ -501,6 +501,12 @@ export default function IntelAdminPage() {
   const [originalGames, setOriginalGames] = useState<
     Record<string, CasinoGameRow>
   >({});
+  // Map of intel.id -> submitter email (resolved server-side via the
+  // /api/admin/intel-emails route). Stored separately from submissions so
+  // an email-fetch failure doesn't break the whole list.
+  const [submitterEmails, setSubmitterEmails] = useState<
+    Record<string, string>
+  >({});
   const [counts, setCounts] = useState<StatusCounts>({
     pending: 0,
     approved: 0,
@@ -604,6 +610,37 @@ export default function IntelAdminPage() {
           map[g.id] = g;
         }
         setOriginalGames(map);
+      }
+    }
+
+    // Resolve submitter emails server-side. casino_intel.submitter_email
+    // is NULL for v1.13+ rows by design; the API route uses the service-
+    // role key to look the email up via auth.users by user_id. Failures
+    // here are non-fatal -- we just render "Anonymous" without an email.
+    const intelIds = rows.map((r) => r.id);
+    if (intelIds.length === 0) {
+      setSubmitterEmails({});
+    } else {
+      try {
+        const res = await fetch("/api/admin/intel-emails", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: ADMIN_PASSWORD, intelIds }),
+        });
+        if (res.ok) {
+          const json = (await res.json()) as { emails?: Record<string, string> };
+          setSubmitterEmails(json.emails ?? {});
+        } else {
+          const json = await res.json().catch(() => ({}));
+          console.warn(
+            "Submitter-email lookup failed:",
+            json?.error ?? res.statusText
+          );
+          setSubmitterEmails({});
+        }
+      } catch (err) {
+        console.warn("Submitter-email lookup network error:", err);
+        setSubmitterEmails({});
       }
     }
 
@@ -814,10 +851,25 @@ export default function IntelAdminPage() {
                         {item.casinos?.name ?? "Unknown Casino"}
                       </h3>
                       <p className="text-xs text-slate-400 mt-0.5">
-                        by {item.submitted_by || "Anonymous"}
-                        {item.submitter_email && (
-                          <span className="text-slate-500"> ({item.submitter_email})</span>
-                        )}
+                        by {(() => {
+                          const name = (item.submitted_by ?? "").trim();
+                          const email =
+                            submitterEmails[item.id] ??
+                            item.submitter_email ??
+                            "";
+                          const hasName =
+                            name.length > 0 && name.toLowerCase() !== "anonymous";
+                          if (hasName && email)
+                            return (
+                              <>
+                                {name}{" "}
+                                <span className="text-slate-500">({email})</span>
+                              </>
+                            );
+                          if (hasName) return name;
+                          if (email) return email;
+                          return "Anonymous";
+                        })()}
                         {" "}&middot; {formatDate(item.created_at)}
                       </p>
                     </div>
