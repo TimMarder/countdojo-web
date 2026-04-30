@@ -655,29 +655,70 @@ export default function IntelAdminPage() {
   }, [authenticated, activeTab, fetchCounts, fetchSubmissions]);
 
   // Actions
+  //
+  // Approve/reject goes through /api/admin/intel-action because:
+  //   - The anon key client can't satisfy the casino_intel UPDATE RLS
+  //     policy (auth.uid() is null), so a direct supabase.update would
+  //     silently no-op -- the row would visually move to "approved" and
+  //     then snap back to "pending" on reload.
+  //   - Approving rule_update / new_casino / new-game intels needs to
+  //     ALSO mutate casinos / casino_games. The mobile admin handler
+  //     already does this; the route mirrors that logic so a web
+  //     approval lands the same end-state as a mobile approval.
   const handleAction = useCallback(
     async (id: string, newStatus: "approved" | "rejected") => {
       setActionLoading(id);
-      const { error } = await supabase
-        .from("casino_intel")
-        .update({ status: newStatus, reviewed_at: new Date().toISOString() })
-        .eq("id", id);
-
-      if (error) {
-        setToast({ message: `Failed to ${newStatus}: ${error.message}`, type: "error" });
-      } else {
-        setSubmissions((prev) => prev.filter((s) => s.id !== id));
-        setCounts((prev) => ({
-          ...prev,
-          [activeTab]: Math.max(0, prev[activeTab] - 1),
-          [newStatus]: prev[newStatus] + 1,
-        }));
-        setToast({
-          message: `Submission ${newStatus === "approved" ? "approved" : "rejected"} successfully.`,
-          type: "success",
+      try {
+        const res = await fetch("/api/admin/intel-action", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            password: ADMIN_PASSWORD,
+            intelId: id,
+            action: newStatus,
+          }),
         });
+        const json = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          warnings?: string[];
+          error?: string;
+        };
+
+        if (!res.ok || !json.ok) {
+          setToast({
+            message: `Failed to ${newStatus}: ${json.error ?? res.statusText}`,
+            type: "error",
+          });
+        } else {
+          setSubmissions((prev) => prev.filter((s) => s.id !== id));
+          setCounts((prev) => ({
+            ...prev,
+            [activeTab]: Math.max(0, prev[activeTab] - 1),
+            [newStatus]: prev[newStatus] + 1,
+          }));
+          if (json.warnings && json.warnings.length > 0) {
+            // Approval went through but a side-effect (casino_games
+            // insert/update, etc.) failed. Surface the first warning so
+            // the admin knows to investigate manually.
+            setToast({
+              message: `${newStatus === "approved" ? "Approved" : "Rejected"} with warning: ${json.warnings[0]}`,
+              type: "error",
+            });
+          } else {
+            setToast({
+              message: `Submission ${newStatus === "approved" ? "approved" : "rejected"} successfully.`,
+              type: "success",
+            });
+          }
+        }
+      } catch (err) {
+        setToast({
+          message: `Network error: ${err instanceof Error ? err.message : String(err)}`,
+          type: "error",
+        });
+      } finally {
+        setActionLoading(null);
       }
-      setActionLoading(null);
     },
     [activeTab]
   );
