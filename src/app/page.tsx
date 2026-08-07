@@ -51,7 +51,6 @@ type Screenshot = { src: string; alt: string };
 type CasinoPreset = { name: string; decks: string; rules: string[]; pen: string };
 type ReferenceTool = { label: string; desc: string };
 type AchievementCat = { label: string; count: number; examples: string[] };
-type EdgeRow = { tc: string; edge: number; note: string };
 type ComparisonRow = { approach: string; gaps: string; emphasis?: boolean };
 
 const proofStats = [
@@ -408,16 +407,6 @@ const achievementCategories: AchievementCat[] = [
   },
 ];
 
-const edgeTable: EdgeRow[] = [
-  { tc: "−5", edge: -3.0, note: "House edge amplified" },
-  { tc: "−2", edge: -1.5, note: "Below basic strategy baseline" },
-  { tc: " 0", edge: -0.5, note: "Basic strategy baseline" },
-  { tc: "+2", edge: 0.0, note: "Roughly break-even" },
-  { tc: "+3", edge: 0.5, note: "Player edge begins" },
-  { tc: "+5", edge: 2.0, note: "Bet large — this is what you waited for" },
-  { tc: "+8", edge: 3.5, note: "Maximum practical edge" },
-];
-
 const comparisons: ComparisonRow[] = [
   {
     approach: "YouTube videos",
@@ -582,21 +571,6 @@ function PlayStoreIcon() {
   return (
     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" />
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg
-      className="w-3.5 h-3.5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      aria-hidden
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H9M17 7V15" />
     </svg>
   );
 }
@@ -1564,7 +1538,7 @@ function CurriculumSection() {
                 <span className="chapter-mark w-12 self-start mt-1">{unit.numeral}</span>
                 <div className="min-w-0">
                   <h3
-                    className="font-display text-2xl md:text-3xl text-paper mb-2"
+                    className="font-display title-md text-paper mb-2"
                     style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
                   >
                     {unit.title}
@@ -1699,7 +1673,7 @@ function CountingSystemsSection() {
                 </div>
                 <div className="min-w-0">
                   <h3
-                    className="font-display text-2xl md:text-3xl text-paper mb-2"
+                    className="font-display title-md text-paper mb-2"
                     style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
                   >
                     {s.name}
@@ -1966,37 +1940,6 @@ function EdgeChart() {
   );
 }
 
-function EdgeRowLine({ row }: { row: EdgeRow }) {
-  const pct = Math.max(-5, Math.min(5, row.edge));
-  const width = `${(Math.abs(pct) / 5) * 50}%`;
-  const isPositive = row.edge > 0;
-  const isZero = row.edge === 0;
-  const color = isZero
-    ? "var(--paper-faint)"
-    : isPositive
-      ? "var(--emerald)"
-      : "var(--amber)";
-  return (
-    <div className="edge-row" style={{ color }}>
-      <span className="tabular-nums text-paper-muted">TC {row.tc}</span>
-      <div className="edge-bar" aria-hidden>
-        <span className="edge-bar__mid" />
-        <span
-          className="edge-bar__fill"
-          style={{
-            width,
-            left: isPositive ? "50%" : `calc(50% - ${width})`,
-          }}
-        />
-      </div>
-      <span className="tabular-nums">
-        {row.edge > 0 ? "+" : ""}
-        {row.edge.toFixed(1)}%
-      </span>
-    </div>
-  );
-}
-
 function MathSection() {
   return (
     <section className="section-rhythm bg-ink-1 border-y border-rule">
@@ -2167,7 +2110,7 @@ function BeltsSection() {
               <div>
                 <p className="text-label mb-2 tabular-nums">{b.range}</p>
                 <h3
-                  className="font-display text-2xl md:text-3xl text-paper"
+                  className="font-display title-md text-paper"
                   style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
                 >
                   {b.belt}
@@ -2214,7 +2157,7 @@ function ReferenceSection() {
               </span>
               <div className="min-w-0">
                 <h3
-                  className="font-display text-xl md:text-2xl text-paper mb-1"
+                  className="font-display title-sm text-paper mb-1"
                   style={{ fontVariationSettings: '"SOFT" 75, "opsz" 48' }}
                 >
                   {t.label}
@@ -2256,7 +2199,7 @@ function BadgesSection() {
             >
               <div className="flex items-baseline justify-between">
                 <h3
-                  className="font-display text-xl md:text-2xl text-paper"
+                  className="font-display title-sm text-paper"
                   style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
                 >
                   {cat.label}
@@ -2310,7 +2253,7 @@ function ComparisonSection() {
               </span>
               <div className="min-w-0">
                 <h3
-                  className={`font-display text-2xl md:text-3xl mb-2 ${
+                  className={`font-display title-md mb-2 ${
                     row.emphasis ? "text-emerald-accent" : "text-paper"
                   }`}
                   style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
