@@ -1288,10 +1288,10 @@ function LiveCountDemoSection() {
         <div className="border border-rule rounded-md bg-ink-0 overflow-hidden">
           <div className="px-5 py-3 border-b border-rule flex items-center justify-between gap-4 flex-wrap">
             <span className="text-label">Hi-Lo · running count</span>
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="link-mono text-paper-muted hover:text-paper"
+                className="demo-control"
                 onClick={() => {
                   setDealt(0);
                   setPlaying(true);
@@ -1301,7 +1301,7 @@ function LiveCountDemoSection() {
               </button>
               <button
                 type="button"
-                className="link-mono text-paper-muted hover:text-paper"
+                className="demo-control"
                 onClick={() => setPlaying((p) => !p)}
                 aria-pressed={!playing}
               >
@@ -1309,7 +1309,7 @@ function LiveCountDemoSection() {
               </button>
               <button
                 type="button"
-                className="link-mono text-paper-muted hover:text-paper disabled:opacity-30 disabled:cursor-not-allowed"
+                className="demo-control"
                 onClick={() => {
                   setPlaying(false);
                   setDealt((d) => (d >= liveDemo.length ? d : d + 1));
@@ -1476,7 +1476,7 @@ function HeroSection() {
               <button
                 type="button"
                 onClick={toggleFilm}
-                className="link-mono align-baseline underline decoration-dotted underline-offset-4 py-2 -my-2"
+                className="link-mono align-baseline underline decoration-dotted underline-offset-4 py-3 -my-3"
               >
                 {playing ? "Pause film" : "Play film"}
               </button>
@@ -2563,7 +2563,7 @@ function FAQItem({
       </button>
       <div className="faq-body" data-open={open}>
         <div>
-          <p className="text-paper-muted text-pretty pl-14 pr-10 pt-4 pb-2 max-w-3xl">
+          <p className="text-paper-muted text-pretty pl-14 pr-10 pt-4 pb-6 max-w-3xl">
             {item.a}
           </p>
         </div>

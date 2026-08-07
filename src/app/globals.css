@@ -92,12 +92,19 @@
   :focus-visible {
     outline: 2px solid var(--emerald);
     outline-offset: 3px;
-    border-radius: 4px;
+    border-radius: var(--r-ui);
   }
 
   button,
   a {
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Tailwind v4's Preflight no longer sets this. Anchors still get it from the
+     UA sheet, so the store/ghost buttons were unaffected — every real <button>
+     on the site was not. */
+  button:not(:disabled) {
+    cursor: pointer;
   }
 }
 
@@ -255,6 +262,36 @@
     color: var(--emerald);
   }
 
+  /* The demo transport was three 19px-tall bare text labels with no hit area
+     and nothing marking them as controls. Same mono voice, but with a body. */
+  .demo-control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0.4rem 0.75rem;
+    font-family: var(--font-mono-stack);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--paper-muted);
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: var(--r-ui);
+    transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+  }
+
+  .demo-control:hover:not(:disabled) {
+    color: var(--paper);
+    border-color: var(--control-edge);
+    background: var(--surface-2);
+  }
+
+  .demo-control:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
   .btn-primary {
     display: inline-flex;
     align-items: center;
@@ -266,7 +303,7 @@
     font-size: 0.78rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    border-radius: 999px;
+    border-radius: var(--r-ui);
     border: 1px solid var(--emerald);
     transition: background 200ms ease, transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
     will-change: transform;
@@ -290,8 +327,8 @@
     font-size: 0.78rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    border-radius: 999px;
-    border: 1px solid var(--rule-strong);
+    border-radius: var(--r-ui);
+    border: 1px solid var(--control-edge);
     transition: border-color 200ms ease, color 200ms ease, background 200ms ease, transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 
@@ -335,8 +372,8 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.9rem 1.35rem;
-    border-radius: 999px;
-    border: 1px solid var(--rule-strong);
+    border-radius: var(--r-ui);
+    border: 1px solid var(--control-edge);
     background: var(--ink-1);
     color: var(--paper);
     transition: border-color 200ms ease, background 200ms ease, transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -571,9 +608,14 @@
   /* =========================================================
      Accordion
      ========================================================= */
+  /* Padding lives on the toggle, not the item: on the item it was dead space
+     the button could not be clicked through, so the hit area was 25px tall. */
   .faq-item {
     border-top: 1px solid var(--rule);
-    padding-block: 1.25rem;
+  }
+
+  .faq-item:has(.faq-toggle:hover) {
+    border-top-color: var(--rule-strong);
   }
 
   .faq-item:last-child {
@@ -586,7 +628,18 @@
     align-items: baseline;
     width: 100%;
     text-align: left;
-    cursor: pointer;
+    padding-block: 1.25rem;
+    min-height: 44px;
+  }
+
+  /* Without the negative offset the ring draws a ~1200px rectangle across the
+     full content width instead of hugging the row. */
+  .faq-toggle:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .faq-toggle:hover .faq-toggle-icon {
+    color: var(--emerald);
   }
 
   .faq-toggle-icon {
@@ -742,7 +795,7 @@
   .helix-card-back {
     position: absolute;
     inset: 0;
-    border-radius: 10px;
+    border-radius: var(--r-card);
     will-change: opacity;
   }
 
@@ -770,7 +823,7 @@
     position: absolute;
     inset: 5px;
     border: 1px solid rgba(245, 241, 232, 0.28);
-    border-radius: 6px;
+    border-radius: calc(var(--r-card) - 4px);
     pointer-events: none;
     z-index: 1;
   }
@@ -826,7 +879,7 @@
   .helix-card-face .playing-card {
     width: 100%;
     height: 100%;
-    border-radius: 10px;
+    border-radius: var(--r-card);
     padding: 8px 10px;
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.45) inset,
@@ -1052,7 +1105,7 @@
     position: relative;
     width: clamp(100px, 12vw, 150px);
     aspect-ratio: 5 / 7;
-    border-radius: 12px;
+    border-radius: var(--r-card);
     background: linear-gradient(160deg, #faf7ee 0%, #e9e2ce 100%);
     color: #111113;
     border: 1px solid rgba(0, 0, 0, 0.2);
@@ -1168,9 +1221,9 @@
     transform: translate(-50%, -100%);
     pointer-events: none;
     background: var(--ink-0);
-    border: 1px solid var(--rule-strong);
+    border: 1px solid var(--control-edge);
     padding: 10px 14px;
-    border-radius: 4px;
+    border-radius: var(--r-ui);
     white-space: nowrap;
     z-index: 5;
     box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.6);
@@ -1198,7 +1251,7 @@
     position: relative;
     width: 54px;
     height: 76px;
-    border-radius: 8px;
+    border-radius: var(--r-card);
     background: linear-gradient(180deg, #f8f5ec 0%, #eae4d3 100%);
     color: #0b0b0b;
     border: 1px solid rgba(0, 0, 0, 0.18);
@@ -1264,9 +1317,9 @@
     letter-spacing: 0.12em;
     color: var(--emerald);
     background: var(--ink-1);
-    border: 1px solid var(--rule-strong);
+    border: 1px solid var(--control-edge);
     padding: 2px 8px;
-    border-radius: 999px;
+    border-radius: var(--r-ui);
     white-space: nowrap;
   }
 
@@ -1274,8 +1327,8 @@
      Formula / math display
      ========================================================= */
   .formula-card {
-    border: 1px solid var(--rule-strong);
-    border-radius: 4px;
+    border: 1px solid var(--control-edge);
+    border-radius: var(--r-ui);
     padding: clamp(1.75rem, 4vw, 2.75rem);
     background:
       radial-gradient(140% 100% at 100% 0%, rgba(52, 211, 153, 0.04) 0%, transparent 55%),
