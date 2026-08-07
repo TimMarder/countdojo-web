@@ -1298,7 +1298,6 @@ function LiveCountDemoSection() {
             <p className="text-chapter mb-5">Demonstration</p>
             <h2
               className="font-display text-display-md text-paper text-balance"
-              style={{ fontVariationSettings: '"SOFT" 80, "opsz" 96' }}
             >
               This is what counting looks like.
             </h2>
@@ -1479,10 +1478,7 @@ function HeroSection() {
             <h1 className="font-display text-display-xl text-paper text-balance mt-6">
               A serious craft.
               <br />
-              <span
-                className="italic"
-                style={{ fontVariationSettings: '"SOFT" 100, "opsz" 144' }}
-              >
+              <span className="italic">
                 Finally taught
               </span>{" "}
               like one.
@@ -1544,13 +1540,9 @@ function ThorpEpigraph() {
           <p className="text-chapter mb-6">Epigraph</p>
           <blockquote
             className="font-display text-display-md text-paper text-pretty leading-[1.05]"
-            style={{ fontVariationSettings: '"SOFT" 70, "opsz" 96' }}
           >
             &ldquo;Blackjack can be beaten. Not with luck or hunches or betting systems.{" "}
-            <span
-              className="italic"
-              style={{ fontVariationSettings: '"SOFT" 100, "opsz" 144' }}
-            >
+            <span className="italic">
               With mathematics.
             </span>
             &rdquo;
@@ -1608,7 +1600,6 @@ function CurriculumSection() {
                 <div className="min-w-0">
                   <h3
                     className="font-display title-md text-paper mb-2"
-                    style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
                   >
                     {unit.title}
                   </h3>
@@ -1670,7 +1661,6 @@ function DrillsSection() {
                     >
                       <p
                         className="font-display text-xl md:text-2xl text-paper"
-                        style={{ fontVariationSettings: '"SOFT" 70, "opsz" 48' }}
                       >
                         {d.name}
                       </p>
@@ -1743,7 +1733,6 @@ function CountingSystemsSection() {
                 <div className="min-w-0">
                   <h3
                     className="font-display title-md text-paper mb-2"
-                    style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
                   >
                     {s.name}
                   </h3>
@@ -2123,7 +2112,6 @@ function SimulatorSection() {
               <div key={p.name} className="preset-cell">
                 <p
                   className="font-display text-lg md:text-xl text-paper"
-                  style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
                 >
                   {p.name}
                 </p>
@@ -2180,7 +2168,6 @@ function BeltsSection() {
                 <p className="text-label mb-2 tabular-nums">{b.range}</p>
                 <h3
                   className="font-display title-md text-paper"
-                  style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
                 >
                   {b.belt}
                 </h3>
@@ -2227,7 +2214,6 @@ function ReferenceSection() {
               <div className="min-w-0">
                 <h3
                   className="font-display title-sm text-paper mb-1"
-                  style={{ fontVariationSettings: '"SOFT" 75, "opsz" 48' }}
                 >
                   {t.label}
                 </h3>
@@ -2269,7 +2255,6 @@ function BadgesSection() {
               <div className="flex items-baseline justify-between">
                 <h3
                   className="font-display title-sm text-paper"
-                  style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
                 >
                   {cat.label}
                 </h3>
@@ -2325,7 +2310,6 @@ function ComparisonSection() {
                   className={`font-display title-md mb-2 ${
                     row.emphasis ? "text-emerald-accent" : "text-paper"
                   }`}
-                  style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
                 >
                   {row.approach}
                 </h3>
@@ -2368,7 +2352,6 @@ function PricingSection() {
             <div className="flex items-baseline justify-between mb-4">
               <h3
                 className="font-display text-3xl md:text-4xl text-paper"
-                style={{ fontVariationSettings: '"SOFT" 80, "opsz" 72' }}
               >
                 {pricingFree.label}
               </h3>
@@ -2395,7 +2378,6 @@ function PricingSection() {
             <div className="flex items-baseline justify-between mb-4 mt-2">
               <h3
                 className="font-display text-3xl md:text-4xl text-paper"
-                style={{ fontVariationSettings: '"SOFT" 80, "opsz" 72' }}
               >
                 {pricingPremium.label}
               </h3>
@@ -2530,7 +2512,6 @@ function TestimonialsSection() {
               <figure className="border-t border-rule pt-8">
                 <blockquote
                   className="font-display text-2xl md:text-[1.75rem] text-paper leading-[1.2] text-pretty"
-                  style={{ fontVariationSettings: '"SOFT" 60, "opsz" 48' }}
                 >
                   <span className="text-emerald-accent mr-1">&ldquo;</span>
                   {t.quote}
@@ -2569,7 +2550,6 @@ function FAQItem({
         </span>
         <span
           className="font-display text-xl md:text-2xl text-paper flex-1"
-          style={{ fontVariationSettings: '"SOFT" 70, "opsz" 48' }}
         >
           {item.q}
         </span>
@@ -2633,10 +2613,7 @@ function FinalCTA() {
             <br />
             The math is simple.
             <br />
-            <span
-              className="italic"
-              style={{ fontVariationSettings: '"SOFT" 100, "opsz" 144' }}
-            >
+            <span className="italic">
               The work is yours.
             </span>
           </h2>

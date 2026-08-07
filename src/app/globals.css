@@ -117,11 +117,29 @@
   /* Leading is NOT set here: 0.95 belongs to the hero, not to every h3 that
      happens to be set in the display face. The .text-display-* and .title-*
      steps each declare their own. */
+  /* opsz is deliberately NOT pinned here. Every call site used to set it
+     inline ("opsz" 48/72/96/144 across 17 elements), which silently cancelled
+     the font-optical-sizing: auto on the line above and forced a 144pt optical
+     design onto 28px headings. Left to `auto`, opsz tracks the real rendered
+     size. SOFT stays authored, but bound to type role via --soft. */
   .font-display {
     font-family: var(--font-serif);
     font-optical-sizing: auto;
-    font-variation-settings: "SOFT" 50, "opsz" 144;
+    font-variation-settings: "SOFT" var(--soft);
     letter-spacing: -0.02em;
+  }
+
+  /* Softer terminals as type gets smaller and as emphasis increases. */
+  .title-md,
+  .title-sm {
+    --soft: 80;
+  }
+
+  .font-display em,
+  .font-display i,
+  .font-display .italic,
+  .soft-emphasis {
+    --soft: 100;
   }
 
 
@@ -195,7 +213,7 @@
   .text-stat {
     font-family: var(--font-serif);
     font-optical-sizing: auto;
-    font-variation-settings: "SOFT" 100, "opsz" 144;
+    font-variation-settings: "SOFT" 100;
     letter-spacing: -0.03em;
     line-height: 1;
     font-feature-settings: "tnum", "lnum";
@@ -417,7 +435,7 @@
   .btn-store__primary-text {
     font-family: var(--font-serif);
     font-optical-sizing: auto;
-    font-variation-settings: "SOFT" 50, "opsz" 48;
+    font-variation-settings: "SOFT" 50;
     font-size: 1.05rem;
     letter-spacing: -0.01em;
   }
@@ -436,7 +454,7 @@
 
   .chapter-mark {
     font-family: var(--font-serif);
-    font-variation-settings: "SOFT" 50, "opsz" 96;
+    font-variation-settings: "SOFT" 50;
     font-size: 0.95rem;
     letter-spacing: 0.06em;
     color: var(--emerald);
@@ -877,7 +895,7 @@
 
   .helix-card-back__glyph {
     font-family: var(--font-serif);
-    font-variation-settings: "SOFT" 100, "opsz" 144;
+    font-variation-settings: "SOFT" 100;
     font-size: 2.5rem;
     line-height: 1;
     letter-spacing: -0.02em;
@@ -934,7 +952,7 @@
     user-select: none;
     z-index: 1;
     will-change: transform, opacity;
-    font-variation-settings: "SOFT" 100, "opsz" 144;
+    font-variation-settings: "SOFT" 100;
   }
 
   .cinematic-stages {
@@ -1022,7 +1040,7 @@
   .cinematic-headline {
     font-family: var(--font-serif);
     font-optical-sizing: auto;
-    font-variation-settings: "SOFT" 80, "opsz" 144;
+    font-variation-settings: "SOFT" 80;
     font-size: clamp(2.25rem, 6vw, 5rem);
     line-height: 0.98;
     letter-spacing: -0.028em;
@@ -1033,7 +1051,7 @@
 
   .cinematic-headline em {
     font-style: italic;
-    font-variation-settings: "SOFT" 100, "opsz" 144;
+    font-variation-settings: "SOFT" 100;
     color: var(--emerald);
   }
 
@@ -1146,7 +1164,7 @@
     flex-direction: column;
     justify-content: space-between;
     font-family: var(--font-serif);
-    font-variation-settings: "SOFT" 50, "opsz" 96;
+    font-variation-settings: "SOFT" 50;
     letter-spacing: -0.01em;
     will-change: transform;
   }
@@ -1193,7 +1211,7 @@
     position: absolute;
     transform: translate(-50%, -50%);
     font-family: var(--font-serif);
-    font-variation-settings: "SOFT" 40, "opsz" 48;
+    font-variation-settings: "SOFT" 40;
     font-size: clamp(0.8rem, 1.35vw, 1.3rem);
     line-height: 1;
     font-weight: 700;
@@ -1267,7 +1285,7 @@
 
   .edge-chart__tooltip-edge {
     font-family: var(--font-serif);
-    font-variation-settings: "SOFT" 80, "opsz" 48;
+    font-variation-settings: "SOFT" 80;
     font-size: 1.25rem;
     font-feature-settings: "tnum", "lnum";
   }
@@ -1294,7 +1312,7 @@
     font-size: 1.15rem;
     font-weight: 700;
     line-height: 1;
-    font-variation-settings: "SOFT" 50, "opsz" 48;
+    font-variation-settings: "SOFT" 50;
     transition:
       transform 400ms cubic-bezier(0.2, 0.7, 0.2, 1),
       opacity 400ms cubic-bezier(0.2, 0.7, 0.2, 1),
@@ -1365,7 +1383,7 @@
 
   .formula-glyph {
     font-family: var(--font-serif);
-    font-variation-settings: "SOFT" 100, "opsz" 144;
+    font-variation-settings: "SOFT" 100;
     font-size: clamp(2rem, 5vw, 3.5rem);
     letter-spacing: -0.02em;
     line-height: 1.1;
