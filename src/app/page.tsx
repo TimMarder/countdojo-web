@@ -1575,10 +1575,10 @@ function CurriculumSection() {
             grounded in math, not hype.
           </p>
         </div>
-        <div>
+        <div className="editorial-list">
           {curriculum.map((unit, i) => (
             <Reveal key={unit.numeral} delay={i * 50}>
-              <div className="editorial-row group items-start">
+              <div className="editorial-row items-start">
                 <span className="chapter-mark w-12 self-start mt-1">{unit.numeral}</span>
                 <div className="min-w-0">
                   <h3
@@ -1705,11 +1705,11 @@ function CountingSystemsSection() {
             for history, curiosity, and the players who benefit from specialized systems.
           </p>
         </div>
-        <div>
+        <div className="editorial-list">
           {countingSystems.map((s, i) => (
             <Reveal key={s.name} delay={i * 35}>
-              <div className="editorial-row items-start">
-                <div className="flex flex-col gap-1 min-w-[7rem]">
+              <div className="editorial-row editorial-row--stack items-start">
+                <div className="flex flex-col gap-1">
                   <span className="text-label">{s.rank}</span>
                   <span className="font-mono text-[0.62rem] tracking-[0.2em] uppercase text-paper-faint">
                     {s.level}
@@ -2286,7 +2286,7 @@ function ComparisonSection() {
             curriculum, drills, simulator, and reference — as one thing.
           </p>
         </div>
-        <div>
+        <div className="editorial-list">
           {comparisons.map((row, i) => (
             <div
               key={row.approach}

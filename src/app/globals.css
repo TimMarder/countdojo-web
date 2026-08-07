@@ -459,12 +459,40 @@
     border-top-color: var(--rule-strong);
   }
 
-  .editorial-row:last-child {
-    border-bottom: 1px solid var(--rule);
+  /* At 390px the three-track row spent ~246 of 350px on the numeral gutter and
+     the nowrap meta column, shredding titles to three lines. Numeral keeps a
+     narrow gutter; meta drops beneath the content, left-aligned. */
+  @media (max-width: 767px) {
+    .editorial-row {
+      grid-template-columns: 2.5rem minmax(0, 1fr);
+      gap: 0 1rem;
+      align-items: start;
+    }
+
+    .editorial-row > *:nth-child(3) {
+      grid-column: 2;
+      margin-top: 0.75rem;
+      text-align: left;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+
+    /* Counting systems leads with a wide rank cell that will not fit a 2.5rem
+       track — it stacks fully instead. */
+    .editorial-row--stack {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .editorial-row--stack > * {
+      grid-column: 1;
+    }
   }
 
-  .editorial-row:last-child:hover {
-    border-bottom-color: var(--rule-strong);
+  /* Closing rule belongs to the list, not the row: each row is the sole child
+     of its own <Reveal>, so :last-child matched every one of them and adjacent
+     borders stacked to 2px. */
+  .editorial-list {
+    border-bottom: 1px solid var(--rule);
   }
 
   /* =========================================================
@@ -508,7 +536,6 @@
     transform: translateY(14px);
     transition: opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
                 transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
-    will-change: opacity, transform;
   }
 
   .reveal.is-visible {
@@ -679,7 +706,8 @@
     .proof-strip {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    .proof-strip > * {
+    /* n+3 skips the first row, whose rule the container already draws. */
+    .proof-strip > :nth-child(n + 3) {
       border-top: 1px solid var(--rule);
     }
   }
