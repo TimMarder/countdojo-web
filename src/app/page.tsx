@@ -18,6 +18,13 @@ const APP_STORE_URL =
 const GOOGLE_PLAY_URL =
   "https://play.google.com/store/apps/details?id=com.countdojo.app&utm_source=na_Med";
 
+/**
+ * Middot separator with non-breaking glue. U+00A0 binds the dot to the token
+ * before it; U+2002 is the only breakable space in the run. A wrapped line can
+ * therefore end with a separator but can never begin with one.
+ */
+const DOT = " · ";
+
 type Unit = {
   numeral: string;
   title: string;
@@ -1399,19 +1406,48 @@ function LiveCountDemoSection() {
 }
 
 function HeroSection() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  // Playback starts here rather than via `autoPlay` so that reduced-motion
+  // users never fetch the film at all. Markup is byte-identical on server and
+  // client — swapping the element on a hook value would mount the video and
+  // start the download before the swap resolved.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    v.preload = "auto";
+    v.play().then(() => setPlaying(true)).catch(() => {});
+  }, []);
+
+  const toggleFilm = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.preload = "auto";
+      v.play().then(() => setPlaying(true)).catch(() => {});
+    } else {
+      v.pause();
+      setPlaying(false);
+    }
+  };
+
   return (
     <section className="relative overflow-hidden hero-media border-b border-rule">
       <video
+        ref={videoRef}
         className="hero-video absolute inset-0 w-full h-full object-cover"
-        autoPlay
         muted
         loop
         playsInline
-        poster="/images/IMG_6360.jpg"
+        preload="none"
+        aria-hidden="true"
+        poster="/images/hero-poster.jpg"
       >
         <source src="/videos/blackjack-hero.mp4" type="video/mp4" />
       </video>
-      <div className="relative z-10 site-shell pt-32 pb-24 md:pt-40 md:pb-32 min-h-[88vh] flex items-end">
+      <div className="relative z-10 site-shell pt-32 pb-24 md:pt-40 md:pb-32 min-h-[88svh] flex items-end">
         <div className="grid md:grid-cols-[1.5fr_1fr] gap-16 w-full items-end">
           <div className="hero-stagger max-w-2xl">
             <ChapterMark roman="I" title="An education in advantage play" />
@@ -1435,7 +1471,15 @@ function HeroSection() {
               <StoreButtons primary />
             </div>
             <p className="text-label mt-8">
-              Free to start    ·    No math skill required    ·    Works offline
+              {["Free to start", "No math skill required", "Works offline"].join(DOT)}
+              <span aria-hidden="true">{DOT}</span>
+              <button
+                type="button"
+                onClick={toggleFilm}
+                className="link-mono align-baseline underline decoration-dotted underline-offset-4 py-2 -my-2"
+              >
+                {playing ? "Pause film" : "Play film"}
+              </button>
             </p>
           </div>
           <HeroCardFan />
@@ -1588,7 +1632,7 @@ function DrillsSection() {
             <Reveal key={cat.label} delay={i * 70}>
               <div>
                 <p className="text-label mb-5 flex items-center gap-3">
-                  <span className="font-mono text-paper-ghost tabular-nums">
+                  <span className="font-mono text-paper-faint tabular-nums">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   {cat.label}
@@ -2062,7 +2106,7 @@ function SimulatorSection() {
                   {p.decks}
                 </p>
                 <p className="font-mono text-[0.72rem] tracking-[0.08em] text-paper-faint">
-                  {p.rules.join("  ·  ")}
+                  {p.rules.join(DOT)}
                 </p>
                 <p className="font-mono text-[0.68rem] tracking-[0.14em] uppercase text-paper-faint tabular-nums mt-auto">
                   {p.pen}
@@ -2333,7 +2377,7 @@ function PricingSection() {
             </div>
             <p className="text-paper-muted mb-2 text-pretty">{pricingPremium.headline}</p>
             <p className="font-mono text-[0.65rem] tracking-[0.22em] uppercase text-paper-faint mb-8">
-              {pricingPremium.plans.join("   ·   ")}
+              {pricingPremium.plans.join(DOT)}
             </p>
             <ul className="space-y-3 mb-10 flex-1">
               {pricingPremium.items.map((item) => (
@@ -2441,7 +2485,7 @@ function ScreenshotsSection() {
               </svg>
             </button>
             <span className="md:hidden text-label">
-              {current.alt}    ·    {String(index + 1).padStart(2, "0")} / {String(screenshots.length).padStart(2, "0")}
+              {current.alt}{DOT}{String(index + 1).padStart(2, "0")} / {String(screenshots.length).padStart(2, "0")}
             </span>
           </div>
         </div>
@@ -2575,7 +2619,7 @@ function FinalCTA() {
             <StoreButtons primary />
           </div>
           <p className="text-label mt-8">
-            Free to start    ·    No credit card    ·    Offline-first
+            {["Free to start", "No credit card", "Offline-first"].join(DOT)}
           </p>
         </div>
       </div>

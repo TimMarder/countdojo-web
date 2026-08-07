@@ -10,7 +10,9 @@
   /* Paper — warm cream, slight off-white for printed feel */
   --paper: #f5f1e8;
   --paper-muted: #a8a29e;
-  --paper-faint: #78716c;
+  /* 5.24 / 5.00 / 4.69 on ink-0/1/2. Was #78716c (4.12/3.93/3.69) — every one
+     of its uses is small text, so the 3:1 large-text allowance never applied. */
+  --paper-faint: #8a827c;
   --paper-ghost: #44403c;
 
   --rule: #27272a;
@@ -121,8 +123,11 @@
     font-feature-settings: "zero", "ss01";
   }
 
+  /* The 3.5rem floor only gave way to the preferred term at a 571px viewport,
+     so the hero h1 held a fixed 56px across the whole phone range and "one."
+     orphaned onto a third line. Only the MIN changes; desktop is unaffected. */
   .text-display-xl {
-    font-size: clamp(3.5rem, 7vw + 1rem, 8rem);
+    font-size: clamp(2.5rem, 7vw + 1rem, 8rem);
     line-height: 0.92;
     letter-spacing: -0.035em;
   }
@@ -161,6 +166,15 @@
     letter-spacing: 0.3em;
     text-transform: uppercase;
     color: var(--emerald);
+  }
+
+  /* At 0.78rem/0.3em the longest chapter mark measures ~403px and wrapped a
+     single orphaned word onto line two on every phone. ~304px here. */
+  @media (max-width: 480px) {
+    .text-chapter {
+      font-size: 0.66rem;
+      letter-spacing: 0.2em;
+    }
   }
 
   .text-label {
@@ -486,7 +500,11 @@
     inset: 0;
     background:
       radial-gradient(120% 100% at 100% 0%, rgba(52, 211, 153, 0.08) 0%, transparent 55%),
-      linear-gradient(180deg, rgba(10, 10, 11, 0.35) 0%, rgba(10, 10, 11, 0.85) 65%, rgba(10, 10, 11, 0.98) 100%);
+      /* Floor raised from 0.35: the eyebrow sits over a *looping* film, so its
+         contrast was whatever frame happened to be playing (4.47:1 at p90 of
+         the background luminance, 3.26:1 at p99). 0.55 clears 4.5:1 on every
+         frame. */
+      linear-gradient(180deg, rgba(10, 10, 11, 0.55) 0%, rgba(10, 10, 11, 0.88) 55%, rgba(10, 10, 11, 0.98) 100%);
     z-index: 1;
     pointer-events: none;
   }
