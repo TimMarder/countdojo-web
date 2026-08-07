@@ -5,7 +5,7 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-rule">
       <div className="site-shell py-16 md:py-20">
-        <div className="grid md:grid-cols-[1.4fr,1fr,1fr] gap-10 md:gap-16">
+        <div className="grid md:grid-cols-[1.4fr_1fr_1fr] gap-10 md:gap-16">
           <div>
             <Link href="/" className="inline-block" aria-label="Count Dojo home">
               <Image

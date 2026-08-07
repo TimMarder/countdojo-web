@@ -1287,7 +1287,7 @@ function LiveCountDemoSection() {
   return (
     <section className="border-b border-rule bg-ink-1">
       <div className="site-shell py-20 md:py-28">
-        <div className="grid md:grid-cols-[1fr,2fr] gap-10 md:gap-16 items-start mb-12">
+        <div className="grid md:grid-cols-[1fr_2fr] gap-10 md:gap-16 items-start mb-12">
           <div>
             <p className="text-chapter mb-5">Demonstration</p>
             <h2
@@ -1438,7 +1438,7 @@ function HeroSection() {
         <source src="/videos/blackjack-hero.mp4" type="video/mp4" />
       </video>
       <div className="relative z-10 site-shell pt-32 pb-24 md:pt-40 md:pb-32 min-h-[88vh] flex items-end">
-        <div className="grid md:grid-cols-[1.5fr,1fr] gap-16 w-full items-end">
+        <div className="grid md:grid-cols-[1.5fr_1fr] gap-16 w-full items-end">
           <div className="hero-stagger max-w-2xl">
             <ChapterMark roman="I" title="An education in advantage play" />
             <h1 className="font-display text-display-xl text-paper text-balance mt-6">
@@ -1542,7 +1542,7 @@ function CurriculumSection() {
   return (
     <section id="curriculum" className="section-rhythm">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="II" title="The Path" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -1596,7 +1596,7 @@ function DrillsSection() {
   return (
     <section id="drills" className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="III" title="The Repetition" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -1644,7 +1644,7 @@ function DrillsSection() {
           ))}
         </div>
 
-        <div className="mt-20 pt-10 border-t border-rule grid md:grid-cols-[auto,1fr] gap-8 md:gap-12 items-center">
+        <div className="mt-20 pt-10 border-t border-rule grid md:grid-cols-[auto_1fr] gap-8 md:gap-12 items-center">
           <p className="text-label">Medal thresholds</p>
           <div className="flex flex-wrap gap-x-10 gap-y-3 font-mono text-sm tabular-nums text-paper">
             <span>
@@ -1673,7 +1673,7 @@ function CountingSystemsSection() {
   return (
     <section id="systems" className="section-rhythm">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="IV" title="The Languages" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2001,7 +2001,7 @@ function MathSection() {
   return (
     <section className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="V" title="The Math" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2015,7 +2015,7 @@ function MathSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-[1.05fr,1fr] gap-10 md:gap-16 items-stretch">
+        <div className="grid md:grid-cols-[1.05fr_1fr] gap-10 md:gap-16 items-stretch">
           <div className="formula-card flex flex-col justify-between">
             <div>
               <p className="text-label mb-6">True count formula</p>
@@ -2064,7 +2064,7 @@ function SimulatorSection() {
   return (
     <section id="simulator" className="section-rhythm">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1.1fr,1fr] gap-16 items-center">
+        <div className="grid md:grid-cols-[1.1fr_1fr] gap-16 items-center">
           <div>
             <ChapterMark roman="VI" title="The Dojo Floor" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance mb-8">
@@ -2137,7 +2137,7 @@ function BeltsSection() {
   return (
     <section className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="VII" title="The Journey" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2189,7 +2189,7 @@ function ReferenceSection() {
   return (
     <section className="section-rhythm">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="VIII" title="The Reference Library" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2233,7 +2233,7 @@ function BadgesSection() {
   return (
     <section className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="IX" title="The Badges" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2287,7 +2287,7 @@ function ComparisonSection() {
   return (
     <section className="section-rhythm">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="X" title="vs The Usual Path" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2336,7 +2336,7 @@ function PricingSection() {
   return (
     <section id="pricing" className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="XI" title="Tuition" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2431,7 +2431,7 @@ function ScreenshotsSection() {
   return (
     <section id="screenshots" className="section-rhythm">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="XII" title="Surfaces" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2442,7 +2442,7 @@ function ScreenshotsSection() {
             Skill tree, drills, references, the casino floor, stats. The app, uncropped.
           </p>
         </div>
-        <div className="grid md:grid-cols-[1fr,auto,1fr] items-center gap-6 md:gap-12">
+        <div className="grid md:grid-cols-[1fr_auto_1fr] items-center gap-6 md:gap-12">
           <div className="hidden md:flex flex-col gap-4 items-end text-right">
             <span className="text-label">{current.alt}</span>
             <span className="font-mono text-xs text-paper-faint tabular-nums">
