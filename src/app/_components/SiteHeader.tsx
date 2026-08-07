@@ -53,6 +53,7 @@ function PlayStoreGlyph() {
 function DownloadDropdown() {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -60,7 +61,11 @@ function DownloadDropdown() {
       if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      // Without this, dismissing drops focus to <body> and keyboard users lose
+      // their place in the header.
+      triggerRef.current?.focus();
     };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
@@ -73,22 +78,23 @@ function DownloadDropdown() {
   return (
     <div ref={wrapRef} className="relative">
       <button
+        ref={triggerRef}
         type="button"
         className="btn-primary"
-        aria-haspopup="menu"
+        aria-haspopup="true"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
         Download
         <ChevronDown />
       </button>
+      {/* Deliberately not role="menu". That role promises the full ARIA menu
+          pattern — roving tabindex, arrow-key navigation, application mode —
+          which two links do not need and this did not implement. As a plain
+          group of links, native tab order is already correct. */}
       {open && (
-        <div
-          role="menu"
-          className="absolute right-0 mt-2 w-44 border border-rule-strong bg-ink-1 rounded-lg shadow-xl overflow-hidden"
-        >
+        <div className="absolute right-0 mt-2 w-44 border border-control-edge bg-ink-1 overflow-hidden">
           <a
-            role="menuitem"
             href={APP_STORE_URL}
             target="_blank"
             rel="noopener noreferrer"
@@ -99,7 +105,6 @@ function DownloadDropdown() {
             <span>iOS</span>
           </a>
           <a
-            role="menuitem"
             href={GOOGLE_PLAY_URL}
             target="_blank"
             rel="noopener noreferrer"

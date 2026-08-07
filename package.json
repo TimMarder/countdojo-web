@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:cinematic": "node tests/cinematic-scroll.mjs"
+    "test:cinematic": "node tests/cinematic-scroll.mjs",
+    "audit:visual": "node tests/visual-audit.mjs",
+    "audit:a11y": "node tests/a11y-audit.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.0",

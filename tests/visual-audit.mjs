@@ -1,8 +1,8 @@
 import { chromium } from "playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 
-const URL = "http://localhost:3000";
-const OUT = process.argv[2] || "/private/tmp/claude-501/-Users-tim-Developer-countdojo-web/51aee389-d69d-420f-a809-045794d910e2/scratchpad/shots";
+const URL = "http://localhost:3200";
+const OUT = process.argv[2] || "/tmp/countdojo-visual-audit";
 await mkdir(OUT, { recursive: true });
 
 const VIEWPORTS = [

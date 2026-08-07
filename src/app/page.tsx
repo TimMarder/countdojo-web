@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
   motion,
   useMotionValueEvent,
@@ -17,6 +17,31 @@ const APP_STORE_URL =
   "https://apps.apple.com/us/app/count-dojo-bj-card-counting/id6760961014";
 const GOOGLE_PLAY_URL =
   "https://play.google.com/store/apps/details?id=com.countdojo.app&utm_source=na_Med";
+
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+function subscribeToReducedMotion(onChange: () => void) {
+  const mq = window.matchMedia(REDUCED_MOTION_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+
+/**
+ * Hydration-safe reduced-motion preference.
+ *
+ * motion's own useReducedMotion() resolves to null on the server and on the
+ * first client render, so branching a component's *tree* on it makes the
+ * server emit one structure and the client another. useSyncExternalStore lets
+ * React hydrate against the server snapshot and then re-render with the real
+ * value, which is a normal update rather than a mismatch.
+ */
+function usePrefersReducedMotion() {
+  return useSyncExternalStore(
+    subscribeToReducedMotion,
+    () => window.matchMedia(REDUCED_MOTION_QUERY).matches,
+    () => false,
+  );
+}
 
 /**
  * Middot separator with non-breaking glue. U+00A0 binds the dot to the token
@@ -969,7 +994,7 @@ function CinematicSuit({
 
 function CinematicSequence() {
   const ref = useRef<HTMLDivElement>(null);
-  const reduced = useReducedMotion() ?? false;
+  const reduced = usePrefersReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: ref,
