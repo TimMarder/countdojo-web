@@ -1,7 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   motion,
   useMotionValueEvent,
@@ -17,6 +24,38 @@ const APP_STORE_URL =
   "https://apps.apple.com/us/app/count-dojo-bj-card-counting/id6760961014";
 const GOOGLE_PLAY_URL =
   "https://play.google.com/store/apps/details?id=com.countdojo.app&utm_source=na_Med";
+
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+function subscribeToReducedMotion(onChange: () => void) {
+  const mq = window.matchMedia(REDUCED_MOTION_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+
+/**
+ * Hydration-safe reduced-motion preference.
+ *
+ * motion's own useReducedMotion() resolves to null on the server and on the
+ * first client render, so branching a component's *tree* on it makes the
+ * server emit one structure and the client another. useSyncExternalStore lets
+ * React hydrate against the server snapshot and then re-render with the real
+ * value, which is a normal update rather than a mismatch.
+ */
+function usePrefersReducedMotion() {
+  return useSyncExternalStore(
+    subscribeToReducedMotion,
+    () => window.matchMedia(REDUCED_MOTION_QUERY).matches,
+    () => false,
+  );
+}
+
+/**
+ * Middot separator with non-breaking glue. U+00A0 binds the dot to the token
+ * before it; U+2002 is the only breakable space in the run. A wrapped line can
+ * therefore end with a separator but can never begin with one.
+ */
+const DOT = " · ";
 
 type Unit = {
   numeral: string;
@@ -47,11 +86,17 @@ type Belt = {
 type Testimonial = { quote: string; author: string };
 type FaqItem = { q: string; a: string };
 type DrillCategory = { label: string; drills: { name: string; note?: string }[] };
-type Screenshot = { src: string; alt: string };
+type Screenshot = { src: string; label: string; caption: string };
+type ScreenGroup = {
+  id: string;
+  name: string;
+  numeral: string;
+  blurb: string;
+  shots: Screenshot[];
+};
 type CasinoPreset = { name: string; decks: string; rules: string[]; pen: string };
 type ReferenceTool = { label: string; desc: string };
 type AchievementCat = { label: string; count: number; examples: string[] };
-type EdgeRow = { tc: string; edge: number; note: string };
 type ComparisonRow = { approach: string; gaps: string; emphasis?: boolean };
 
 const proofStats = [
@@ -408,16 +453,6 @@ const achievementCategories: AchievementCat[] = [
   },
 ];
 
-const edgeTable: EdgeRow[] = [
-  { tc: "−5", edge: -3.0, note: "House edge amplified" },
-  { tc: "−2", edge: -1.5, note: "Below basic strategy baseline" },
-  { tc: " 0", edge: -0.5, note: "Basic strategy baseline" },
-  { tc: "+2", edge: 0.0, note: "Roughly break-even" },
-  { tc: "+3", edge: 0.5, note: "Player edge begins" },
-  { tc: "+5", edge: 2.0, note: "Bet large — this is what you waited for" },
-  { tc: "+8", edge: 3.5, note: "Maximum practical edge" },
-];
-
 const comparisons: ComparisonRow[] = [
   {
     approach: "YouTube videos",
@@ -518,18 +553,190 @@ const faq: FaqItem[] = [
   },
 ];
 
-const screenshots: Screenshot[] = [
-  { src: "/images/IMG_6959.PNG", alt: "Skill Tree" },
-  { src: "/images/IMG_6960.PNG", alt: "Practice" },
-  { src: "/images/IMG_6961.PNG", alt: "Drills" },
-  { src: "/images/IMG_6962.PNG", alt: "Counting" },
-  { src: "/images/IMG_6963.PNG", alt: "Reference" },
-  { src: "/images/IMG_6964.PNG", alt: "Casino Simulator" },
-  { src: "/images/IMG_6965.PNG", alt: "Simulator" },
-  { src: "/images/IMG_6966.PNG", alt: "Profile" },
-  { src: "/images/IMG_6967.PNG", alt: "Settings" },
-  { src: "/images/IMG_6968.PNG", alt: "Stats" },
+const screenGroups: ScreenGroup[] = [
+  {
+    id: "learn",
+    name: "Learn",
+    numeral: "01",
+    blurb:
+      "Six units, thirty-plus lessons. Each one teaches a single idea, shows the arithmetic on real hands, then checks that it landed.",
+    shots: [
+      {
+        src: "/images/app/learn-path.webp",
+        label: "Your path",
+        caption: "Belt rank, XP, and the six-unit curriculum gated in order.",
+      },
+      {
+        src: "/images/app/learn-lesson-count.webp",
+        label: "A lesson",
+        caption: "Round-by-round running count, worked through card by card.",
+      },
+      {
+        src: "/images/app/learn-lesson-hands.webp",
+        label: "Worked example",
+        caption: "A full hand including hits, with each card's tag broken out.",
+      },
+      {
+        src: "/images/app/learn-quiz.webp",
+        label: "Comprehension check",
+        caption: "Lessons end by asking why, not just what.",
+      },
+      {
+        src: "/images/app/learn-review.webp",
+        label: "Spaced review",
+        caption: "Weak spots resurface on their own schedule.",
+      },
+    ],
+  },
+  {
+    id: "practice",
+    name: "Practice",
+    numeral: "02",
+    blurb:
+      "Nineteen drill types across counting, basic strategy, and advanced play. Adaptive difficulty, graded to medal tiers.",
+    shots: [
+      {
+        src: "/images/app/practice-library.webp",
+        label: "Drill library",
+        caption: "Every drill grouped by skill, built for deliberate reps.",
+      },
+      {
+        src: "/images/app/practice-counting.webp",
+        label: "Counting drills",
+        caption: "Card flash, running count, pair cancellation, deck countdown.",
+      },
+      {
+        src: "/images/app/practice-advanced.webp",
+        label: "Advanced drills",
+        caption: "True count conversion, bet sizing, the Illustrious 18.",
+      },
+      {
+        src: "/images/app/practice-hand-count.webp",
+        label: "Single hand count",
+        caption: "Track the count change through one dealt hand.",
+      },
+      {
+        src: "/images/app/practice-integrated.webp",
+        label: "Integrated drill",
+        caption: "True count, bet size, and play — all three in one rep.",
+      },
+      {
+        src: "/images/app/practice-medal.webp",
+        label: "Medal tiers",
+        caption: "Bronze through Legend. Accuracy earns the metal.",
+      },
+      {
+        src: "/images/app/practice-achievements.webp",
+        label: "Achievements",
+        caption: "Seventy-two of them, across curriculum, streaks, and mastery.",
+      },
+    ],
+  },
+  {
+    id: "simulator",
+    name: "Simulator",
+    numeral: "03",
+    blurb:
+      "A casino floor calibrated to real table rules — chips, heat, distractions, and a grade on every decision you make.",
+    shots: [
+      {
+        src: "/images/app/sim-settings.webp",
+        label: "Table setup",
+        caption: "Toggle deck estimation, deviations, distractions, and heat.",
+      },
+      {
+        src: "/images/app/sim-betting.webp",
+        label: "Placing the bet",
+        caption: "Build the wager by stacking real chip denominations.",
+      },
+      {
+        src: "/images/app/sim-count-check.webp",
+        label: "Count checks",
+        caption: "The shoe stops mid-session and asks for your running count.",
+      },
+      {
+        src: "/images/app/sim-grade.webp",
+        label: "Session grade",
+        caption: "Hands, time, actual result against expected value.",
+      },
+      {
+        src: "/images/app/sim-skills.webp",
+        label: "Skill breakdown",
+        caption: "Graded per axis: strategy, counting, conversion, bet sizing.",
+      },
+      {
+        src: "/images/app/sim-notes.webp",
+        label: "Coaching notes",
+        caption: "Specific, actionable corrections — not just a score.",
+      },
+    ],
+  },
+  {
+    id: "tools",
+    name: "Reference",
+    numeral: "04",
+    blurb:
+      "The working tools. Charts, indices, spreads, and the math you need to size a bankroll before you sit down.",
+    shots: [
+      {
+        src: "/images/app/tools-strategy.webp",
+        label: "Strategy charts",
+        caption: "Every rule set, hard and soft totals, pairs and surrender.",
+      },
+      {
+        src: "/images/app/tools-deviations.webp",
+        label: "Deviation indices",
+        caption: "Illustrious 18, Fab 4, and extended plays with EV per index.",
+      },
+      {
+        src: "/images/app/tools-spreads.webp",
+        label: "Bet spread tables",
+        caption: "Single and two-hand ramps by true count, at your unit.",
+      },
+      {
+        src: "/images/app/tools-edge.webp",
+        label: "Edge calculator",
+        caption: "Change one rule, watch the house edge move.",
+      },
+      {
+        src: "/images/app/tools-bankroll.webp",
+        label: "Bankroll planner",
+        caption: "Required roll for a chosen risk of ruin, with N0 and CI.",
+      },
+      {
+        src: "/images/app/tools-glossary.webp",
+        label: "Glossary",
+        caption: "124 terms, from ace sequencing to wonging.",
+      },
+    ],
+  },
+  {
+    id: "field",
+    name: "In the field",
+    numeral: "05",
+    blurb:
+      "For when the training stops being theoretical: where to play, what the rules are there, and what it actually returned.",
+    shots: [
+      {
+        src: "/images/app/field-database.webp",
+        label: "Casino database",
+        caption: "843 casinos, filterable by decks, dealer rule, and payout.",
+      },
+      {
+        src: "/images/app/field-casino.webp",
+        label: "House rules",
+        caption: "Penetration, spread, and computed edge — loadable into the sim.",
+      },
+      {
+        src: "/images/app/field-results.webp",
+        label: "Results tracker",
+        caption: "Session earnings charted against expected value.",
+      },
+    ],
+  },
 ];
+
+const allScreens = screenGroups.flatMap((g) => g.shots);
 
 function Reveal({
   children,
@@ -582,21 +789,6 @@ function PlayStoreIcon() {
   return (
     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" />
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg
-      className="w-3.5 h-3.5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      aria-hidden
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H9M17 7V15" />
     </svg>
   );
 }
@@ -988,7 +1180,7 @@ function CinematicSuit({
 
 function CinematicSequence() {
   const ref = useRef<HTMLDivElement>(null);
-  const reduced = useReducedMotion() ?? false;
+  const reduced = usePrefersReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -1287,12 +1479,11 @@ function LiveCountDemoSection() {
   return (
     <section className="border-b border-rule bg-ink-1">
       <div className="site-shell py-20 md:py-28">
-        <div className="grid md:grid-cols-[1fr,2fr] gap-10 md:gap-16 items-start mb-12">
+        <div className="grid md:grid-cols-[1fr_2fr] gap-10 md:gap-16 items-start mb-12">
           <div>
             <p className="text-chapter mb-5">Demonstration</p>
             <h2
               className="font-display text-display-md text-paper text-balance"
-              style={{ fontVariationSettings: '"SOFT" 80, "opsz" 96' }}
             >
               This is what counting looks like.
             </h2>
@@ -1307,10 +1498,10 @@ function LiveCountDemoSection() {
         <div className="border border-rule rounded-md bg-ink-0 overflow-hidden">
           <div className="px-5 py-3 border-b border-rule flex items-center justify-between gap-4 flex-wrap">
             <span className="text-label">Hi-Lo · running count</span>
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="link-mono text-paper-muted hover:text-paper"
+                className="demo-control"
                 onClick={() => {
                   setDealt(0);
                   setPlaying(true);
@@ -1320,7 +1511,7 @@ function LiveCountDemoSection() {
               </button>
               <button
                 type="button"
-                className="link-mono text-paper-muted hover:text-paper"
+                className="demo-control"
                 onClick={() => setPlaying((p) => !p)}
                 aria-pressed={!playing}
               >
@@ -1328,7 +1519,7 @@ function LiveCountDemoSection() {
               </button>
               <button
                 type="button"
-                className="link-mono text-paper-muted hover:text-paper disabled:opacity-30 disabled:cursor-not-allowed"
+                className="demo-control"
                 onClick={() => {
                   setPlaying(false);
                   setDealt((d) => (d >= liveDemo.length ? d : d + 1));
@@ -1425,29 +1616,55 @@ function LiveCountDemoSection() {
 }
 
 function HeroSection() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  // Playback starts here rather than via `autoPlay` so that reduced-motion
+  // users never fetch the film at all. Markup is byte-identical on server and
+  // client — swapping the element on a hook value would mount the video and
+  // start the download before the swap resolved.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    v.preload = "auto";
+    v.play().then(() => setPlaying(true)).catch(() => {});
+  }, []);
+
+  const toggleFilm = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.preload = "auto";
+      v.play().then(() => setPlaying(true)).catch(() => {});
+    } else {
+      v.pause();
+      setPlaying(false);
+    }
+  };
+
   return (
     <section className="relative overflow-hidden hero-media border-b border-rule">
       <video
+        ref={videoRef}
         className="hero-video absolute inset-0 w-full h-full object-cover"
-        autoPlay
         muted
         loop
         playsInline
-        poster="/images/IMG_6360.jpg"
+        preload="none"
+        aria-hidden="true"
+        poster="/images/hero-poster.jpg"
       >
         <source src="/videos/blackjack-hero.mp4" type="video/mp4" />
       </video>
-      <div className="relative z-10 site-shell pt-32 pb-24 md:pt-40 md:pb-32 min-h-[88vh] flex items-end">
-        <div className="grid md:grid-cols-[1.5fr,1fr] gap-16 w-full items-end">
+      <div className="relative z-10 site-shell pt-32 pb-24 md:pt-40 md:pb-32 min-h-[88svh] flex items-end">
+        <div className="grid md:grid-cols-[1.5fr_1fr] gap-16 w-full items-end">
           <div className="hero-stagger max-w-2xl">
             <ChapterMark roman="I" title="An education in advantage play" />
             <h1 className="font-display text-display-xl text-paper text-balance mt-6">
               A serious craft.
               <br />
-              <span
-                className="italic"
-                style={{ fontVariationSettings: '"SOFT" 100, "opsz" 144' }}
-              >
+              <span className="italic">
                 Finally taught
               </span>{" "}
               like one.
@@ -1461,7 +1678,15 @@ function HeroSection() {
               <StoreButtons primary />
             </div>
             <p className="text-label mt-8">
-              Free to start    ·    No math skill required    ·    Works offline
+              {["Free to start", "No math skill required", "Works offline"].join(DOT)}
+              <span aria-hidden="true">{DOT}</span>
+              <button
+                type="button"
+                onClick={toggleFilm}
+                className="link-mono align-baseline underline decoration-dotted underline-offset-4 py-3 -my-3"
+              >
+                {playing ? "Pause film" : "Play film"}
+              </button>
             </p>
           </div>
           <HeroCardFan />
@@ -1501,13 +1726,9 @@ function ThorpEpigraph() {
           <p className="text-chapter mb-6">Epigraph</p>
           <blockquote
             className="font-display text-display-md text-paper text-pretty leading-[1.05]"
-            style={{ fontVariationSettings: '"SOFT" 70, "opsz" 96' }}
           >
             &ldquo;Blackjack can be beaten. Not with luck or hunches or betting systems.{" "}
-            <span
-              className="italic"
-              style={{ fontVariationSettings: '"SOFT" 100, "opsz" 144' }}
-            >
+            <span className="italic">
               With mathematics.
             </span>
             &rdquo;
@@ -1542,7 +1763,7 @@ function CurriculumSection() {
   return (
     <section id="curriculum" className="section-rhythm">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="II" title="The Path" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -1557,15 +1778,14 @@ function CurriculumSection() {
             grounded in math, not hype.
           </p>
         </div>
-        <div>
+        <div className="editorial-list">
           {curriculum.map((unit, i) => (
             <Reveal key={unit.numeral} delay={i * 50}>
-              <div className="editorial-row group items-start">
+              <div className="editorial-row items-start">
                 <span className="chapter-mark w-12 self-start mt-1">{unit.numeral}</span>
                 <div className="min-w-0">
                   <h3
-                    className="font-display text-2xl md:text-3xl text-paper mb-2"
-                    style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
+                    className="font-display title-md text-paper mb-2"
                   >
                     {unit.title}
                   </h3>
@@ -1596,7 +1816,7 @@ function DrillsSection() {
   return (
     <section id="drills" className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="III" title="The Repetition" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -1614,7 +1834,7 @@ function DrillsSection() {
             <Reveal key={cat.label} delay={i * 70}>
               <div>
                 <p className="text-label mb-5 flex items-center gap-3">
-                  <span className="font-mono text-paper-ghost tabular-nums">
+                  <span className="font-mono text-paper-faint tabular-nums">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   {cat.label}
@@ -1627,7 +1847,6 @@ function DrillsSection() {
                     >
                       <p
                         className="font-display text-xl md:text-2xl text-paper"
-                        style={{ fontVariationSettings: '"SOFT" 70, "opsz" 48' }}
                       >
                         {d.name}
                       </p>
@@ -1644,7 +1863,7 @@ function DrillsSection() {
           ))}
         </div>
 
-        <div className="mt-20 pt-10 border-t border-rule grid md:grid-cols-[auto,1fr] gap-8 md:gap-12 items-center">
+        <div className="mt-20 pt-10 border-t border-rule grid md:grid-cols-[auto_1fr] gap-8 md:gap-12 items-center">
           <p className="text-label">Medal thresholds</p>
           <div className="flex flex-wrap gap-x-10 gap-y-3 font-mono text-sm tabular-nums text-paper">
             <span>
@@ -1673,7 +1892,7 @@ function CountingSystemsSection() {
   return (
     <section id="systems" className="section-rhythm">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="IV" title="The Languages" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -1687,11 +1906,11 @@ function CountingSystemsSection() {
             for history, curiosity, and the players who benefit from specialized systems.
           </p>
         </div>
-        <div>
+        <div className="editorial-list">
           {countingSystems.map((s, i) => (
             <Reveal key={s.name} delay={i * 35}>
-              <div className="editorial-row items-start">
-                <div className="flex flex-col gap-1 min-w-[7rem]">
+              <div className="editorial-row editorial-row--stack items-start">
+                <div className="flex flex-col gap-1">
                   <span className="text-label">{s.rank}</span>
                   <span className="font-mono text-[0.62rem] tracking-[0.2em] uppercase text-paper-faint">
                     {s.level}
@@ -1699,8 +1918,7 @@ function CountingSystemsSection() {
                 </div>
                 <div className="min-w-0">
                   <h3
-                    className="font-display text-2xl md:text-3xl text-paper mb-2"
-                    style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
+                    className="font-display title-md text-paper mb-2"
                   >
                     {s.name}
                   </h3>
@@ -1966,42 +2184,11 @@ function EdgeChart() {
   );
 }
 
-function EdgeRowLine({ row }: { row: EdgeRow }) {
-  const pct = Math.max(-5, Math.min(5, row.edge));
-  const width = `${(Math.abs(pct) / 5) * 50}%`;
-  const isPositive = row.edge > 0;
-  const isZero = row.edge === 0;
-  const color = isZero
-    ? "var(--paper-faint)"
-    : isPositive
-      ? "var(--emerald)"
-      : "var(--amber)";
-  return (
-    <div className="edge-row" style={{ color }}>
-      <span className="tabular-nums text-paper-muted">TC {row.tc}</span>
-      <div className="edge-bar" aria-hidden>
-        <span className="edge-bar__mid" />
-        <span
-          className="edge-bar__fill"
-          style={{
-            width,
-            left: isPositive ? "50%" : `calc(50% - ${width})`,
-          }}
-        />
-      </div>
-      <span className="tabular-nums">
-        {row.edge > 0 ? "+" : ""}
-        {row.edge.toFixed(1)}%
-      </span>
-    </div>
-  );
-}
-
 function MathSection() {
   return (
     <section className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="V" title="The Math" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2015,7 +2202,7 @@ function MathSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-[1.05fr,1fr] gap-10 md:gap-16 items-stretch">
+        <div className="grid md:grid-cols-[1.05fr_1fr] gap-10 md:gap-16 items-stretch">
           <div className="formula-card flex flex-col justify-between">
             <div>
               <p className="text-label mb-6">True count formula</p>
@@ -2064,7 +2251,7 @@ function SimulatorSection() {
   return (
     <section id="simulator" className="section-rhythm">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1.1fr,1fr] gap-16 items-center">
+        <div className="grid md:grid-cols-[1.1fr_1fr] gap-16 items-center">
           <div>
             <ChapterMark roman="VI" title="The Dojo Floor" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance mb-8">
@@ -2088,10 +2275,10 @@ function SimulatorSection() {
             <div className="phone-mock w-full max-w-[300px] -rotate-3">
               <div className="phone-mock__screen">
                 <Image
-                  src="/images/IMG_6964.PNG"
-                  alt="Count Dojo casino simulator"
-                  width={360}
-                  height={780}
+                  src="/images/app/sim-settings.webp"
+                  alt="The Count Dojo casino simulator's rule configuration screen"
+                  width={414}
+                  height={900}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -2111,7 +2298,6 @@ function SimulatorSection() {
               <div key={p.name} className="preset-cell">
                 <p
                   className="font-display text-lg md:text-xl text-paper"
-                  style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
                 >
                   {p.name}
                 </p>
@@ -2119,7 +2305,7 @@ function SimulatorSection() {
                   {p.decks}
                 </p>
                 <p className="font-mono text-[0.72rem] tracking-[0.08em] text-paper-faint">
-                  {p.rules.join("  ·  ")}
+                  {p.rules.join(DOT)}
                 </p>
                 <p className="font-mono text-[0.68rem] tracking-[0.14em] uppercase text-paper-faint tabular-nums mt-auto">
                   {p.pen}
@@ -2137,7 +2323,7 @@ function BeltsSection() {
   return (
     <section className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="VII" title="The Journey" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2167,8 +2353,7 @@ function BeltsSection() {
               <div>
                 <p className="text-label mb-2 tabular-nums">{b.range}</p>
                 <h3
-                  className="font-display text-2xl md:text-3xl text-paper"
-                  style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
+                  className="font-display title-md text-paper"
                 >
                   {b.belt}
                 </h3>
@@ -2189,7 +2374,7 @@ function ReferenceSection() {
   return (
     <section className="section-rhythm">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="VIII" title="The Reference Library" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2214,8 +2399,7 @@ function ReferenceSection() {
               </span>
               <div className="min-w-0">
                 <h3
-                  className="font-display text-xl md:text-2xl text-paper mb-1"
-                  style={{ fontVariationSettings: '"SOFT" 75, "opsz" 48' }}
+                  className="font-display title-sm text-paper mb-1"
                 >
                   {t.label}
                 </h3>
@@ -2233,7 +2417,7 @@ function BadgesSection() {
   return (
     <section className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="IX" title="The Badges" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2256,8 +2440,7 @@ function BadgesSection() {
             >
               <div className="flex items-baseline justify-between">
                 <h3
-                  className="font-display text-xl md:text-2xl text-paper"
-                  style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
+                  className="font-display title-sm text-paper"
                 >
                   {cat.label}
                 </h3>
@@ -2287,7 +2470,7 @@ function ComparisonSection() {
   return (
     <section className="section-rhythm">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="X" title="vs The Usual Path" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2299,7 +2482,7 @@ function ComparisonSection() {
             curriculum, drills, simulator, and reference — as one thing.
           </p>
         </div>
-        <div>
+        <div className="editorial-list">
           {comparisons.map((row, i) => (
             <div
               key={row.approach}
@@ -2310,10 +2493,9 @@ function ComparisonSection() {
               </span>
               <div className="min-w-0">
                 <h3
-                  className={`font-display text-2xl md:text-3xl mb-2 ${
+                  className={`font-display title-md mb-2 ${
                     row.emphasis ? "text-emerald-accent" : "text-paper"
                   }`}
-                  style={{ fontVariationSettings: '"SOFT" 80, "opsz" 48' }}
                 >
                   {row.approach}
                 </h3>
@@ -2336,7 +2518,7 @@ function PricingSection() {
   return (
     <section id="pricing" className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
           <div>
             <ChapterMark roman="XI" title="Tuition" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2356,7 +2538,6 @@ function PricingSection() {
             <div className="flex items-baseline justify-between mb-4">
               <h3
                 className="font-display text-3xl md:text-4xl text-paper"
-                style={{ fontVariationSettings: '"SOFT" 80, "opsz" 72' }}
               >
                 {pricingFree.label}
               </h3>
@@ -2383,14 +2564,13 @@ function PricingSection() {
             <div className="flex items-baseline justify-between mb-4 mt-2">
               <h3
                 className="font-display text-3xl md:text-4xl text-paper"
-                style={{ fontVariationSettings: '"SOFT" 80, "opsz" 72' }}
               >
                 {pricingPremium.label}
               </h3>
             </div>
             <p className="text-paper-muted mb-2 text-pretty">{pricingPremium.headline}</p>
             <p className="font-mono text-[0.65rem] tracking-[0.22em] uppercase text-paper-faint mb-8">
-              {pricingPremium.plans.join("   ·   ")}
+              {pricingPremium.plans.join(DOT)}
             </p>
             <ul className="space-y-3 mb-10 flex-1">
               {pricingPremium.items.map((item) => (
@@ -2415,94 +2595,218 @@ function PricingSection() {
 }
 
 function ScreenshotsSection() {
-  const [index, setIndex] = useState(0);
-  const [phase, setPhase] = useState<"" | "enter-left" | "enter-right">("");
+  const [groupIndex, setGroupIndex] = useState(0);
+  const [lightbox, setLightbox] = useState<number | null>(null);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const triggerRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  const go = (dir: 1 | -1) => {
-    setPhase(dir === 1 ? "enter-right" : "enter-left");
-    setTimeout(() => {
-      setIndex((prev) => (prev + dir + screenshots.length) % screenshots.length);
-      setPhase("");
-    }, 180);
+  const group = screenGroups[groupIndex];
+  // Lightbox indexes into the flat list so arrow keys walk the whole tour,
+  // not just the active group.
+  const flatOffset = screenGroups
+    .slice(0, groupIndex)
+    .reduce((n, g) => n + g.shots.length, 0);
+
+  // useCallback so the keydown effect can depend on it honestly. It changes
+  // only when `lightbox` does, which the effect already re-runs on.
+  const closeLightbox = useCallback(() => {
+    setLightbox(null);
+    if (lightbox !== null) triggerRefs.current[lightbox - flatOffset]?.focus();
+  }, [lightbox, flatOffset]);
+
+  useEffect(() => {
+    if (lightbox === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeLightbox();
+      } else if (e.key === "ArrowRight") {
+        setLightbox((i) => (i === null ? i : (i + 1) % allScreens.length));
+      } else if (e.key === "ArrowLeft") {
+        setLightbox((i) =>
+          i === null ? i : (i - 1 + allScreens.length) % allScreens.length,
+        );
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [lightbox, closeLightbox]);
+
+  // Roving tabindex + arrow keys: this really is a tablist, so it implements
+  // the pattern rather than only claiming the roles.
+  const onTabKey = (e: React.KeyboardEvent, i: number) => {
+    const last = screenGroups.length - 1;
+    let next: number | null = null;
+    if (e.key === "ArrowRight") next = i === last ? 0 : i + 1;
+    else if (e.key === "ArrowLeft") next = i === 0 ? last : i - 1;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = last;
+    if (next === null) return;
+    e.preventDefault();
+    setGroupIndex(next);
+    tabRefs.current[next]?.focus();
   };
 
-  const current = screenshots[index];
+  const shot = lightbox === null ? null : allScreens[lightbox];
 
   return (
-    <section id="screenshots" className="section-rhythm">
+    <section id="screenshots" className="section-rhythm border-t border-rule">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr,2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-12">
           <div>
             <ChapterMark roman="XII" title="Surfaces" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
-              See where the reps happen.
+              Every screen.
+              <br />
+              <span className="italic">Nothing staged.</span>
             </h2>
           </div>
           <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
-            Skill tree, drills, references, the casino floor, stats. The app, uncropped.
+            Twenty-seven screens across five surfaces — the curriculum, the drill
+            floor, the simulator, the reference shelf, and the tools you take to an
+            actual casino. Straight from the app, uncropped.
           </p>
         </div>
-        <div className="grid md:grid-cols-[1fr,auto,1fr] items-center gap-6 md:gap-12">
-          <div className="hidden md:flex flex-col gap-4 items-end text-right">
-            <span className="text-label">{current.alt}</span>
-            <span className="font-mono text-xs text-paper-faint tabular-nums">
-              {String(index + 1).padStart(2, "0")}  /  {String(screenshots.length).padStart(2, "0")}
-            </span>
-          </div>
-          <div className="phone-mock w-full max-w-[320px] mx-auto">
-            <div className="phone-mock__screen">
-              <div className={`carousel-slide ${phase} active w-full h-full`}>
-                <Image
-                  src={current.src}
-                  alt={current.alt}
-                  width={360}
-                  height={780}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="flex md:flex-col items-center md:items-start gap-4">
-            <button
-              type="button"
-              onClick={() => go(-1)}
-              aria-label="Previous screenshot"
-              className="h-11 w-11 rounded-full border border-rule-strong flex items-center justify-center text-paper hover:border-paper hover:text-emerald-accent transition-colors"
-            >
-              <svg
-                className="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                aria-hidden
+
+        <div
+          role="tablist"
+          aria-label="App surfaces"
+          className="flex flex-wrap gap-x-1 gap-y-2 border-b border-rule mb-10"
+        >
+          {screenGroups.map((g, i) => {
+            const active = i === groupIndex;
+            return (
+              <button
+                key={g.id}
+                ref={(el) => {
+                  tabRefs.current[i] = el;
+                }}
+                role="tab"
+                id={`surface-tab-${g.id}`}
+                aria-selected={active}
+                aria-controls="surface-panel"
+                tabIndex={active ? 0 : -1}
+                onClick={() => setGroupIndex(i)}
+                onKeyDown={(e) => onTabKey(e, i)}
+                className={`surface-tab ${active ? "is-active" : ""}`}
               >
-                <path d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => go(1)}
-              aria-label="Next screenshot"
-              className="h-11 w-11 rounded-full border border-rule-strong flex items-center justify-center text-paper hover:border-paper hover:text-emerald-accent transition-colors"
-            >
-              <svg
-                className="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                aria-hidden
-              >
-                <path d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-            <span className="md:hidden text-label">
-              {current.alt}    ·    {String(index + 1).padStart(2, "0")} / {String(screenshots.length).padStart(2, "0")}
-            </span>
-          </div>
+                <span className="surface-tab__numeral" aria-hidden>
+                  {g.numeral}
+                </span>
+                {g.name}
+                <span className="surface-tab__count" aria-hidden>
+                  {g.shots.length}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div
+          role="tabpanel"
+          id="surface-panel"
+          aria-labelledby={`surface-tab-${group.id}`}
+          tabIndex={-1}
+        >
+          <p className="text-paper-muted max-w-2xl text-pretty mb-8">{group.blurb}</p>
+
+          <ul className="screen-strip">
+            {group.shots.map((s, i) => (
+              <li key={s.src} className="screen-strip__item">
+                <button
+                  type="button"
+                  ref={(el) => {
+                    triggerRefs.current[i] = el;
+                  }}
+                  onClick={() => setLightbox(flatOffset + i)}
+                  className="screen-card"
+                  aria-label={`View ${s.label} full size`}
+                >
+                  <span className="screen-card__device">
+                    <Image
+                      src={s.src}
+                      alt=""
+                      width={414}
+                      height={900}
+                      sizes="(max-width: 767px) 60vw, 260px"
+                      className="w-full h-full object-cover object-top"
+                    />
+                  </span>
+                  <span className="screen-card__label">{s.label}</span>
+                  <span className="screen-card__caption">{s.caption}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="text-label text-paper-faint mt-6">
+            {group.shots.length} screens{DOT}Scroll for more{DOT}Tap any to enlarge
+          </p>
         </div>
       </div>
+
+      {shot && (
+        <div
+          className="screen-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${shot.label} — ${shot.caption}`}
+        >
+          <button
+            type="button"
+            className="screen-lightbox__scrim"
+            aria-label="Close"
+            onClick={closeLightbox}
+          />
+          <div className="screen-lightbox__inner">
+            <Image
+              src={shot.src}
+              alt={`${shot.label}. ${shot.caption}`}
+              width={828}
+              height={1798}
+              sizes="(max-width: 767px) 82vw, 380px"
+              className="screen-lightbox__img"
+              priority
+            />
+            <div className="screen-lightbox__meta">
+              <p className="text-label text-paper">{shot.label}</p>
+              <p className="text-sm text-paper-muted mt-2 text-pretty">{shot.caption}</p>
+              <p className="font-mono text-xs text-paper-faint mt-4 tabular-nums">
+                {String(lightbox! + 1).padStart(2, "0")} / {allScreens.length}
+              </p>
+            </div>
+          </div>
+          <div className="screen-lightbox__controls">
+            <button
+              type="button"
+              className="demo-control"
+              onClick={() =>
+                setLightbox((i) =>
+                  i === null ? i : (i - 1 + allScreens.length) % allScreens.length,
+                )
+              }
+            >
+              &#8592; Prev
+            </button>
+            <button type="button" className="demo-control" onClick={closeLightbox}>
+              Close
+            </button>
+            <button
+              type="button"
+              className="demo-control"
+              onClick={() =>
+                setLightbox((i) => (i === null ? i : (i + 1) % allScreens.length))
+              }
+            >
+              Next &#8594;
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -2518,7 +2822,6 @@ function TestimonialsSection() {
               <figure className="border-t border-rule pt-8">
                 <blockquote
                   className="font-display text-2xl md:text-[1.75rem] text-paper leading-[1.2] text-pretty"
-                  style={{ fontVariationSettings: '"SOFT" 60, "opsz" 48' }}
                 >
                   <span className="text-emerald-accent mr-1">&ldquo;</span>
                   {t.quote}
@@ -2557,7 +2860,6 @@ function FAQItem({
         </span>
         <span
           className="font-display text-xl md:text-2xl text-paper flex-1"
-          style={{ fontVariationSettings: '"SOFT" 70, "opsz" 48' }}
         >
           {item.q}
         </span>
@@ -2576,7 +2878,7 @@ function FAQItem({
       </button>
       <div className="faq-body" data-open={open}>
         <div>
-          <p className="text-paper-muted text-pretty pl-14 pr-10 pt-4 pb-2 max-w-3xl">
+          <p className="text-paper-muted text-pretty pl-14 pr-10 pt-4 pb-6 max-w-3xl">
             {item.a}
           </p>
         </div>
@@ -2621,10 +2923,7 @@ function FinalCTA() {
             <br />
             The math is simple.
             <br />
-            <span
-              className="italic"
-              style={{ fontVariationSettings: '"SOFT" 100, "opsz" 144' }}
-            >
+            <span className="italic">
               The work is yours.
             </span>
           </h2>
@@ -2632,7 +2931,7 @@ function FinalCTA() {
             <StoreButtons primary />
           </div>
           <p className="text-label mt-8">
-            Free to start    ·    No credit card    ·    Offline-first
+            {["Free to start", "No credit card", "Offline-first"].join(DOT)}
           </p>
         </div>
       </div>

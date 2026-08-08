@@ -53,6 +53,7 @@ function PlayStoreGlyph() {
 function DownloadDropdown() {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -60,7 +61,11 @@ function DownloadDropdown() {
       if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      // Without this, dismissing drops focus to <body> and keyboard users lose
+      // their place in the header.
+      triggerRef.current?.focus();
     };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
@@ -73,22 +78,23 @@ function DownloadDropdown() {
   return (
     <div ref={wrapRef} className="relative">
       <button
+        ref={triggerRef}
         type="button"
         className="btn-primary"
-        aria-haspopup="menu"
+        aria-haspopup="true"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
         Download
         <ChevronDown />
       </button>
+      {/* Deliberately not role="menu". That role promises the full ARIA menu
+          pattern — roving tabindex, arrow-key navigation, application mode —
+          which two links do not need and this did not implement. As a plain
+          group of links, native tab order is already correct. */}
       {open && (
-        <div
-          role="menu"
-          className="absolute right-0 mt-2 w-44 border border-rule-strong bg-ink-1 rounded-lg shadow-xl overflow-hidden"
-        >
+        <div className="absolute right-0 mt-2 w-44 border border-control-edge bg-ink-1 overflow-hidden">
           <a
-            role="menuitem"
             href={APP_STORE_URL}
             target="_blank"
             rel="noopener noreferrer"
@@ -99,7 +105,6 @@ function DownloadDropdown() {
             <span>iOS</span>
           </a>
           <a
-            role="menuitem"
             href={GOOGLE_PLAY_URL}
             target="_blank"
             rel="noopener noreferrer"
@@ -122,21 +127,27 @@ export function SiteHeader({ links = defaultLinks }: { links?: NavLink[] }) {
       <div className="site-shell flex items-center justify-between h-16">
         <Link
           href="/"
-          className="flex items-center group"
+          className="flex items-center group py-1.5 -my-1.5"
           aria-label="Count Dojo home"
         >
           <Image
             src="/images/Count Dojo Banner Transparent Background NO BORDERS.png"
             alt="Count Dojo"
-            width={220}
-            height={60}
+            /* True intrinsic size. Was declared 220x60 (3.667) against art that
+               is 911x288 (3.163), so the reserved box was 16% too wide. */
+            width={911}
+            height={288}
             priority
             className="h-9 w-auto"
           />
         </Link>
         <nav className="hidden md:flex items-center gap-8" aria-label="Primary">
           {links.map((link) => (
-            <Link key={link.href} href={link.href} className="link-mono text-paper-muted">
+            <Link
+              key={link.href}
+              href={link.href}
+              className="link-mono text-paper-muted py-3 -my-3"
+            >
               {link.label}
             </Link>
           ))}
@@ -146,7 +157,9 @@ export function SiteHeader({ links = defaultLinks }: { links?: NavLink[] }) {
         </div>
         <button
           type="button"
-          className="md:hidden text-paper"
+          /* 24x24 was the only nav control on every phone. p-3 takes it to
+             48x48; the negative margin keeps the glyph optically flush. */
+          className="md:hidden text-paper p-3 -mr-3"
           aria-label="Toggle menu"
           aria-expanded={open}
           onClick={() => setOpen((o) => !o)}

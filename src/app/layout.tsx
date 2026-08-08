@@ -6,6 +6,10 @@ const fraunces = Fraunces({
   subsets: ["latin"],
   variable: "--font-display",
   axes: ["SOFT", "opsz"],
+  // Without this, next/font requests only the roman. The hero h1, the
+  // epigraph and the final CTA all set `italic` on Fraunces, and the browser
+  // was synthesising a fake oblique by shearing the roman.
+  style: ["normal", "italic"],
   display: "swap",
 });
 
