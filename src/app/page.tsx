@@ -1,7 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   motion,
   useMotionValueEvent,
@@ -79,7 +86,14 @@ type Belt = {
 type Testimonial = { quote: string; author: string };
 type FaqItem = { q: string; a: string };
 type DrillCategory = { label: string; drills: { name: string; note?: string }[] };
-type Screenshot = { src: string; alt: string };
+type Screenshot = { src: string; label: string; caption: string };
+type ScreenGroup = {
+  id: string;
+  name: string;
+  numeral: string;
+  blurb: string;
+  shots: Screenshot[];
+};
 type CasinoPreset = { name: string; decks: string; rules: string[]; pen: string };
 type ReferenceTool = { label: string; desc: string };
 type AchievementCat = { label: string; count: number; examples: string[] };
@@ -539,18 +553,190 @@ const faq: FaqItem[] = [
   },
 ];
 
-const screenshots: Screenshot[] = [
-  { src: "/images/IMG_6959.PNG", alt: "Skill Tree" },
-  { src: "/images/IMG_6960.PNG", alt: "Practice" },
-  { src: "/images/IMG_6961.PNG", alt: "Drills" },
-  { src: "/images/IMG_6962.PNG", alt: "Counting" },
-  { src: "/images/IMG_6963.PNG", alt: "Reference" },
-  { src: "/images/IMG_6964.PNG", alt: "Casino Simulator" },
-  { src: "/images/IMG_6965.PNG", alt: "Simulator" },
-  { src: "/images/IMG_6966.PNG", alt: "Profile" },
-  { src: "/images/IMG_6967.PNG", alt: "Settings" },
-  { src: "/images/IMG_6968.PNG", alt: "Stats" },
+const screenGroups: ScreenGroup[] = [
+  {
+    id: "learn",
+    name: "Learn",
+    numeral: "01",
+    blurb:
+      "Six units, thirty-plus lessons. Each one teaches a single idea, shows the arithmetic on real hands, then checks that it landed.",
+    shots: [
+      {
+        src: "/images/app/learn-path.webp",
+        label: "Your path",
+        caption: "Belt rank, XP, and the six-unit curriculum gated in order.",
+      },
+      {
+        src: "/images/app/learn-lesson-count.webp",
+        label: "A lesson",
+        caption: "Round-by-round running count, worked through card by card.",
+      },
+      {
+        src: "/images/app/learn-lesson-hands.webp",
+        label: "Worked example",
+        caption: "A full hand including hits, with each card's tag broken out.",
+      },
+      {
+        src: "/images/app/learn-quiz.webp",
+        label: "Comprehension check",
+        caption: "Lessons end by asking why, not just what.",
+      },
+      {
+        src: "/images/app/learn-review.webp",
+        label: "Spaced review",
+        caption: "Weak spots resurface on their own schedule.",
+      },
+    ],
+  },
+  {
+    id: "practice",
+    name: "Practice",
+    numeral: "02",
+    blurb:
+      "Nineteen drill types across counting, basic strategy, and advanced play. Adaptive difficulty, graded to medal tiers.",
+    shots: [
+      {
+        src: "/images/app/practice-library.webp",
+        label: "Drill library",
+        caption: "Every drill grouped by skill, built for deliberate reps.",
+      },
+      {
+        src: "/images/app/practice-counting.webp",
+        label: "Counting drills",
+        caption: "Card flash, running count, pair cancellation, deck countdown.",
+      },
+      {
+        src: "/images/app/practice-advanced.webp",
+        label: "Advanced drills",
+        caption: "True count conversion, bet sizing, the Illustrious 18.",
+      },
+      {
+        src: "/images/app/practice-hand-count.webp",
+        label: "Single hand count",
+        caption: "Track the count change through one dealt hand.",
+      },
+      {
+        src: "/images/app/practice-integrated.webp",
+        label: "Integrated drill",
+        caption: "True count, bet size, and play — all three in one rep.",
+      },
+      {
+        src: "/images/app/practice-medal.webp",
+        label: "Medal tiers",
+        caption: "Bronze through Legend. Accuracy earns the metal.",
+      },
+      {
+        src: "/images/app/practice-achievements.webp",
+        label: "Achievements",
+        caption: "Seventy-two of them, across curriculum, streaks, and mastery.",
+      },
+    ],
+  },
+  {
+    id: "simulator",
+    name: "Simulator",
+    numeral: "03",
+    blurb:
+      "A casino floor calibrated to real table rules — chips, heat, distractions, and a grade on every decision you make.",
+    shots: [
+      {
+        src: "/images/app/sim-settings.webp",
+        label: "Table setup",
+        caption: "Toggle deck estimation, deviations, distractions, and heat.",
+      },
+      {
+        src: "/images/app/sim-betting.webp",
+        label: "Placing the bet",
+        caption: "Build the wager by stacking real chip denominations.",
+      },
+      {
+        src: "/images/app/sim-count-check.webp",
+        label: "Count checks",
+        caption: "The shoe stops mid-session and asks for your running count.",
+      },
+      {
+        src: "/images/app/sim-grade.webp",
+        label: "Session grade",
+        caption: "Hands, time, actual result against expected value.",
+      },
+      {
+        src: "/images/app/sim-skills.webp",
+        label: "Skill breakdown",
+        caption: "Graded per axis: strategy, counting, conversion, bet sizing.",
+      },
+      {
+        src: "/images/app/sim-notes.webp",
+        label: "Coaching notes",
+        caption: "Specific, actionable corrections — not just a score.",
+      },
+    ],
+  },
+  {
+    id: "tools",
+    name: "Reference",
+    numeral: "04",
+    blurb:
+      "The working tools. Charts, indices, spreads, and the math you need to size a bankroll before you sit down.",
+    shots: [
+      {
+        src: "/images/app/tools-strategy.webp",
+        label: "Strategy charts",
+        caption: "Every rule set, hard and soft totals, pairs and surrender.",
+      },
+      {
+        src: "/images/app/tools-deviations.webp",
+        label: "Deviation indices",
+        caption: "Illustrious 18, Fab 4, and extended plays with EV per index.",
+      },
+      {
+        src: "/images/app/tools-spreads.webp",
+        label: "Bet spread tables",
+        caption: "Single and two-hand ramps by true count, at your unit.",
+      },
+      {
+        src: "/images/app/tools-edge.webp",
+        label: "Edge calculator",
+        caption: "Change one rule, watch the house edge move.",
+      },
+      {
+        src: "/images/app/tools-bankroll.webp",
+        label: "Bankroll planner",
+        caption: "Required roll for a chosen risk of ruin, with N0 and CI.",
+      },
+      {
+        src: "/images/app/tools-glossary.webp",
+        label: "Glossary",
+        caption: "124 terms, from ace sequencing to wonging.",
+      },
+    ],
+  },
+  {
+    id: "field",
+    name: "In the field",
+    numeral: "05",
+    blurb:
+      "For when the training stops being theoretical: where to play, what the rules are there, and what it actually returned.",
+    shots: [
+      {
+        src: "/images/app/field-database.webp",
+        label: "Casino database",
+        caption: "843 casinos, filterable by decks, dealer rule, and payout.",
+      },
+      {
+        src: "/images/app/field-casino.webp",
+        label: "House rules",
+        caption: "Penetration, spread, and computed edge — loadable into the sim.",
+      },
+      {
+        src: "/images/app/field-results.webp",
+        label: "Results tracker",
+        caption: "Session earnings charted against expected value.",
+      },
+    ],
+  },
 ];
+
+const allScreens = screenGroups.flatMap((g) => g.shots);
 
 function Reveal({
   children,
@@ -2089,10 +2275,10 @@ function SimulatorSection() {
             <div className="phone-mock w-full max-w-[300px] -rotate-3">
               <div className="phone-mock__screen">
                 <Image
-                  src="/images/IMG_6964.PNG"
-                  alt="Count Dojo casino simulator"
-                  width={360}
-                  height={780}
+                  src="/images/app/sim-settings.webp"
+                  alt="The Count Dojo casino simulator's rule configuration screen"
+                  width={414}
+                  height={900}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -2409,94 +2595,218 @@ function PricingSection() {
 }
 
 function ScreenshotsSection() {
-  const [index, setIndex] = useState(0);
-  const [phase, setPhase] = useState<"" | "enter-left" | "enter-right">("");
+  const [groupIndex, setGroupIndex] = useState(0);
+  const [lightbox, setLightbox] = useState<number | null>(null);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const triggerRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  const go = (dir: 1 | -1) => {
-    setPhase(dir === 1 ? "enter-right" : "enter-left");
-    setTimeout(() => {
-      setIndex((prev) => (prev + dir + screenshots.length) % screenshots.length);
-      setPhase("");
-    }, 180);
+  const group = screenGroups[groupIndex];
+  // Lightbox indexes into the flat list so arrow keys walk the whole tour,
+  // not just the active group.
+  const flatOffset = screenGroups
+    .slice(0, groupIndex)
+    .reduce((n, g) => n + g.shots.length, 0);
+
+  // useCallback so the keydown effect can depend on it honestly. It changes
+  // only when `lightbox` does, which the effect already re-runs on.
+  const closeLightbox = useCallback(() => {
+    setLightbox(null);
+    if (lightbox !== null) triggerRefs.current[lightbox - flatOffset]?.focus();
+  }, [lightbox, flatOffset]);
+
+  useEffect(() => {
+    if (lightbox === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeLightbox();
+      } else if (e.key === "ArrowRight") {
+        setLightbox((i) => (i === null ? i : (i + 1) % allScreens.length));
+      } else if (e.key === "ArrowLeft") {
+        setLightbox((i) =>
+          i === null ? i : (i - 1 + allScreens.length) % allScreens.length,
+        );
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [lightbox, closeLightbox]);
+
+  // Roving tabindex + arrow keys: this really is a tablist, so it implements
+  // the pattern rather than only claiming the roles.
+  const onTabKey = (e: React.KeyboardEvent, i: number) => {
+    const last = screenGroups.length - 1;
+    let next: number | null = null;
+    if (e.key === "ArrowRight") next = i === last ? 0 : i + 1;
+    else if (e.key === "ArrowLeft") next = i === 0 ? last : i - 1;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = last;
+    if (next === null) return;
+    e.preventDefault();
+    setGroupIndex(next);
+    tabRefs.current[next]?.focus();
   };
 
-  const current = screenshots[index];
+  const shot = lightbox === null ? null : allScreens[lightbox];
 
   return (
-    <section id="screenshots" className="section-rhythm">
+    <section id="screenshots" className="section-rhythm border-t border-rule">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-12">
           <div>
             <ChapterMark roman="XII" title="Surfaces" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
-              See where the reps happen.
+              Every screen.
+              <br />
+              <span className="italic">Nothing staged.</span>
             </h2>
           </div>
           <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
-            Skill tree, drills, references, the casino floor, stats. The app, uncropped.
+            Twenty-seven screens across five surfaces — the curriculum, the drill
+            floor, the simulator, the reference shelf, and the tools you take to an
+            actual casino. Straight from the app, uncropped.
           </p>
         </div>
-        <div className="grid md:grid-cols-[1fr_auto_1fr] items-center gap-6 md:gap-12">
-          <div className="hidden md:flex flex-col gap-4 items-end text-right">
-            <span className="text-label">{current.alt}</span>
-            <span className="font-mono text-xs text-paper-faint tabular-nums">
-              {String(index + 1).padStart(2, "0")}  /  {String(screenshots.length).padStart(2, "0")}
-            </span>
-          </div>
-          <div className="phone-mock w-full max-w-[320px] mx-auto">
-            <div className="phone-mock__screen">
-              <div className={`carousel-slide ${phase} active w-full h-full`}>
-                <Image
-                  src={current.src}
-                  alt={current.alt}
-                  width={360}
-                  height={780}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="flex md:flex-col items-center md:items-start gap-4">
-            <button
-              type="button"
-              onClick={() => go(-1)}
-              aria-label="Previous screenshot"
-              className="h-11 w-11 rounded-full border border-rule-strong flex items-center justify-center text-paper hover:border-paper hover:text-emerald-accent transition-colors"
-            >
-              <svg
-                className="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                aria-hidden
+
+        <div
+          role="tablist"
+          aria-label="App surfaces"
+          className="flex flex-wrap gap-x-1 gap-y-2 border-b border-rule mb-10"
+        >
+          {screenGroups.map((g, i) => {
+            const active = i === groupIndex;
+            return (
+              <button
+                key={g.id}
+                ref={(el) => {
+                  tabRefs.current[i] = el;
+                }}
+                role="tab"
+                id={`surface-tab-${g.id}`}
+                aria-selected={active}
+                aria-controls="surface-panel"
+                tabIndex={active ? 0 : -1}
+                onClick={() => setGroupIndex(i)}
+                onKeyDown={(e) => onTabKey(e, i)}
+                className={`surface-tab ${active ? "is-active" : ""}`}
               >
-                <path d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => go(1)}
-              aria-label="Next screenshot"
-              className="h-11 w-11 rounded-full border border-rule-strong flex items-center justify-center text-paper hover:border-paper hover:text-emerald-accent transition-colors"
-            >
-              <svg
-                className="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                aria-hidden
-              >
-                <path d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-            <span className="md:hidden text-label">
-              {current.alt}{DOT}{String(index + 1).padStart(2, "0")} / {String(screenshots.length).padStart(2, "0")}
-            </span>
-          </div>
+                <span className="surface-tab__numeral" aria-hidden>
+                  {g.numeral}
+                </span>
+                {g.name}
+                <span className="surface-tab__count" aria-hidden>
+                  {g.shots.length}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div
+          role="tabpanel"
+          id="surface-panel"
+          aria-labelledby={`surface-tab-${group.id}`}
+          tabIndex={-1}
+        >
+          <p className="text-paper-muted max-w-2xl text-pretty mb-8">{group.blurb}</p>
+
+          <ul className="screen-strip">
+            {group.shots.map((s, i) => (
+              <li key={s.src} className="screen-strip__item">
+                <button
+                  type="button"
+                  ref={(el) => {
+                    triggerRefs.current[i] = el;
+                  }}
+                  onClick={() => setLightbox(flatOffset + i)}
+                  className="screen-card"
+                  aria-label={`View ${s.label} full size`}
+                >
+                  <span className="screen-card__device">
+                    <Image
+                      src={s.src}
+                      alt=""
+                      width={414}
+                      height={900}
+                      sizes="(max-width: 767px) 60vw, 260px"
+                      className="w-full h-full object-cover object-top"
+                    />
+                  </span>
+                  <span className="screen-card__label">{s.label}</span>
+                  <span className="screen-card__caption">{s.caption}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="text-label text-paper-faint mt-6">
+            {group.shots.length} screens{DOT}Scroll for more{DOT}Tap any to enlarge
+          </p>
         </div>
       </div>
+
+      {shot && (
+        <div
+          className="screen-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${shot.label} — ${shot.caption}`}
+        >
+          <button
+            type="button"
+            className="screen-lightbox__scrim"
+            aria-label="Close"
+            onClick={closeLightbox}
+          />
+          <div className="screen-lightbox__inner">
+            <Image
+              src={shot.src}
+              alt={`${shot.label}. ${shot.caption}`}
+              width={828}
+              height={1798}
+              sizes="(max-width: 767px) 82vw, 380px"
+              className="screen-lightbox__img"
+              priority
+            />
+            <div className="screen-lightbox__meta">
+              <p className="text-label text-paper">{shot.label}</p>
+              <p className="text-sm text-paper-muted mt-2 text-pretty">{shot.caption}</p>
+              <p className="font-mono text-xs text-paper-faint mt-4 tabular-nums">
+                {String(lightbox! + 1).padStart(2, "0")} / {allScreens.length}
+              </p>
+            </div>
+          </div>
+          <div className="screen-lightbox__controls">
+            <button
+              type="button"
+              className="demo-control"
+              onClick={() =>
+                setLightbox((i) =>
+                  i === null ? i : (i - 1 + allScreens.length) % allScreens.length,
+                )
+              }
+            >
+              &#8592; Prev
+            </button>
+            <button type="button" className="demo-control" onClick={closeLightbox}>
+              Close
+            </button>
+            <button
+              type="button"
+              className="demo-control"
+              onClick={() =>
+                setLightbox((i) => (i === null ? i : (i + 1) % allScreens.length))
+              }
+            >
+              Next &#8594;
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

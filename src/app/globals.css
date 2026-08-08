@@ -631,24 +631,9 @@
   /* =========================================================
      Carousel
      ========================================================= */
-  .carousel-slide {
-    transition: transform 520ms cubic-bezier(0.2, 0.7, 0.2, 1), opacity 520ms ease;
-  }
 
-  .carousel-slide.enter-left {
-    transform: translateX(-32px);
-    opacity: 0;
-  }
 
-  .carousel-slide.enter-right {
-    transform: translateX(32px);
-    opacity: 0;
-  }
 
-  .carousel-slide.active {
-    transform: translateX(0);
-    opacity: 1;
-  }
 
   /* =========================================================
      Accordion
@@ -1432,4 +1417,224 @@
       border-top: 1px solid var(--rule);
     }
   }
+
+  /* =========================================================
+     App screenshot gallery
+     ========================================================= */
+  .surface-tab {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    padding: 0.85rem 1rem;
+    min-height: 44px;
+    font-family: var(--font-mono-stack);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--paper-muted);
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 160ms ease, border-color 160ms ease;
+  }
+
+  .surface-tab:hover {
+    color: var(--paper);
+  }
+
+  .surface-tab.is-active {
+    color: var(--paper);
+    border-bottom-color: var(--emerald);
+  }
+
+  .surface-tab__numeral {
+    color: var(--paper-faint);
+    font-size: 0.62rem;
+  }
+
+  .surface-tab.is-active .surface-tab__numeral {
+    color: var(--emerald);
+  }
+
+  .surface-tab__count {
+    color: var(--paper-faint);
+    font-size: 0.62rem;
+  }
+
+  /* Wrapping beats scrolling here — all five surfaces stay visible rather than
+     hiding behind a swipe. Tightened so it lands in two rows, not three. */
+  @media (max-width: 640px) {
+    .surface-tab {
+      padding: 0.75rem 0.55rem;
+      font-size: 0.66rem;
+      letter-spacing: 0.1em;
+      gap: 0.4rem;
+    }
+
+    .surface-tab__numeral {
+      display: none;
+    }
+  }
+
+  /* Filmstrip. Keeps the section a fixed height whether a group holds three
+     screens or seven, and reads as swipeable on a phone. */
+  .screen-strip {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(220px, 260px);
+    gap: 1.5rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 1.25rem;
+    margin-inline: calc(-1 * clamp(1.25rem, 3vw, 2.5rem));
+    padding-inline: clamp(1.25rem, 3vw, 2.5rem);
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule-strong) transparent;
+  }
+
+  @media (max-width: 640px) {
+    .screen-strip {
+      grid-auto-columns: minmax(58vw, 62vw);
+      gap: 1rem;
+    }
+  }
+
+  .screen-strip::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .screen-strip::-webkit-scrollbar-thumb {
+    background: var(--rule-strong);
+  }
+
+  .screen-strip__item {
+    scroll-snap-align: start;
+  }
+
+  .screen-card {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    width: 100%;
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
+
+  .screen-card__device {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 414 / 900;
+    border: 1px solid var(--rule);
+    border-radius: var(--r-card);
+    background: var(--ink-1);
+    transition: border-color 200ms ease, transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .screen-card:hover .screen-card__device,
+  .screen-card:focus-visible .screen-card__device {
+    border-color: var(--control-edge);
+    transform: translateY(-4px);
+  }
+
+  .screen-card__label {
+    display: block;
+    margin-top: 1rem;
+    font-family: var(--font-mono-stack);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--paper);
+  }
+
+  .screen-card__caption {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--paper-faint);
+    text-wrap: pretty;
+  }
+
+  .screen-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: clamp(1rem, 4vw, 3rem);
+  }
+
+  .screen-lightbox__scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(6, 6, 7, 0.94);
+    border: 0;
+    padding: 0;
+  }
+
+  .screen-lightbox__inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    max-height: 72vh;
+  }
+
+  @media (min-width: 900px) {
+    .screen-lightbox__inner {
+      flex-direction: row;
+      align-items: center;
+      gap: 3rem;
+      max-height: 74vh;
+    }
+  }
+
+  .screen-lightbox__img {
+    height: auto;
+    max-height: 64vh;
+    width: auto;
+    max-width: min(82vw, 380px);
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--r-card);
+  }
+
+  .screen-lightbox__meta {
+    position: relative;
+    max-width: 22rem;
+    text-align: center;
+  }
+
+  @media (min-width: 900px) {
+    .screen-lightbox__meta {
+      text-align: left;
+    }
+  }
+
+  .screen-lightbox__controls {
+    position: relative;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .screen-card__device {
+      transition: border-color 200ms ease;
+    }
+
+    .screen-card:hover .screen-card__device,
+    .screen-card:focus-visible .screen-card__device {
+      transform: none;
+    }
+
+    .screen-strip {
+      scroll-snap-type: none;
+    }
+  }
+
 }

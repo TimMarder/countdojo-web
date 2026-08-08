@@ -45,9 +45,24 @@ const r = await page.evaluate(() => {
     .filter((i) => !i.hasAttribute("alt"))
     .map((i) => i.src.slice(-45));
 
-  // ARIA roles that promise a keyboard pattern
-  out.riskyRoles = [...document.querySelectorAll('[role="menu"],[role="menuitem"],[role="tab"],[role="tablist"]')]
-    .map((e) => e.getAttribute("role") + " on " + e.tagName);
+  // Roles that PROMISE a keyboard pattern. Declaring one without implementing
+  // it is the defect; a correctly implemented widget should pass.
+  out.riskyRoles = [];
+  document.querySelectorAll('[role="menu"],[role="menuitem"]').forEach((e) => {
+    out.riskyRoles.push(`${e.getAttribute("role")} on ${e.tagName} (menu pattern rarely implemented)`);
+  });
+  document.querySelectorAll('[role="tablist"]').forEach((list) => {
+    const tabs = [...list.querySelectorAll('[role="tab"]')];
+    const zero = tabs.filter((t) => t.tabIndex === 0).length;
+    const selected = tabs.filter((t) => t.getAttribute("aria-selected") === "true").length;
+    const controls = tabs.every((t) => {
+      const id = t.getAttribute("aria-controls");
+      return id && document.getElementById(id);
+    });
+    if (zero !== 1) out.riskyRoles.push(`tablist: roving tabindex broken (${zero} tabs with tabindex=0, expected 1)`);
+    if (selected !== 1) out.riskyRoles.push(`tablist: ${selected} tabs aria-selected, expected 1`);
+    if (!controls) out.riskyRoles.push("tablist: a tab's aria-controls does not resolve to an element");
+  });
 
   // Elements animating layout-triggering properties
   out.badTransitions = [];
@@ -68,7 +83,7 @@ console.log("landmarks:           ", JSON.stringify(r.landmarks));
 console.log("div/span as button:  ", r.fakeButtons.length === 0 ? "none" : r.fakeButtons);
 console.log("unnamed interactive: ", r.unnamed.length === 0 ? "none" : r.unnamed);
 console.log("img missing alt:     ", r.imgNoAlt.length === 0 ? "none" : r.imgNoAlt);
-console.log("risky ARIA roles:    ", r.riskyRoles.length === 0 ? "none" : r.riskyRoles);
+console.log("ARIA pattern defects:", r.riskyRoles.length === 0 ? "none" : r.riskyRoles);
 console.log("layout-animating:    ", r.badTransitions.length === 0 ? "none" : r.badTransitions);
 
 await browser.close();
