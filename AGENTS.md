@@ -14,8 +14,13 @@ A Next.js 16 / React 19 marketing site for **Count Dojo**, published at
 <https://countdojo.com>.
 
 **This repo ships only the marketing site.** The mobile app lives in a
-sibling repo at `/Users/tim/Developer/count-dojo/app/release/countdojo`
-(not part of this tree — do not try to import from it).
+sibling repo at `/Users/tim/Developer/count-dojo/app/countdojo`
+(not part of this tree — do not try to import from it). **Not**
+`app/release/countdojo` — that clone is frozen at 1.10.0 and gives wrong
+answers. Read the branch matching the live store version
+(`curl -s 'https://itunes.apple.com/lookup?id=6760961014'` → `version`) with
+`git show release/X.Y.0:<path>`; the App Store listing description is a
+good cross-check.
 
 Tech:
 - Next.js `16.1.6` (Turbopack)
@@ -29,9 +34,16 @@ Tech:
 
 Routes:
 - `/` — homepage (the big one)
+- `/about` — founder page (first name only, by the founder's choice)
+- `/vs/blackjack-apprenticeship`, `/vs/blackjack-theory` — honest
+  comparison pages (shared layout in `_components/VsPage.tsx`; competitor
+  facts are dated and sourced on the page — re-verify before editing)
 - `/privacy` — privacy policy
 - `/terms` — terms of service
 - `/delete-account` — App-Store-required account-deletion instructions
+- `/sitemap.xml`, `/robots.txt` (`src/app/sitemap.ts`, `robots.ts`) and
+  `public/llms.txt`. **Add every new public route to `sitemap.ts`.**
+  `/admin` and `/api` are internal and disallowed in robots.
 
 Hosting: Vercel. `trigger deployment` commits in the log exist because
 the CI setup was finicky at one point; they are empty commits and not
@@ -52,82 +64,91 @@ Count Dojo is a serious card-counting education platform. Not a toy, not
 a gambling app. It teaches blackjack basic strategy and card counting as
 a disciplined craft, from absolute beginner to casino-ready.
 
-### Curriculum — six units, ~30 core lessons plus side branches
+Facts below were verified against `release/1.18.0` (live in both stores
+as of 2026-11-15).
 
-| # | Unit | Core lessons | Side branches | Tier |
-|---|------|---|---|---|
-| I | Blackjack Foundations | 17 | 2 | Free |
-| II | Learning to Count | 10 | 3 | Free (first 5) → Premium |
-| III | True Count & Bet Sizing | 12 | 2 | Premium |
-| IV | Playing Deviations | 11 | — | Premium |
-| V | Casino Readiness | 11 | — | Premium |
-| VI | Advanced Advantage Play | 4 | 5 | Premium |
+### Curriculum — six units, 89 lessons (71 core + 18 side branches)
 
-**Placement tests** let experienced players skip ahead by passing a
-10-question quiz (90%) plus 1–3 drill thresholds (85%).
+| # | Unit | Core lessons | Side branches |
+|---|------|---|---|
+| I | Blackjack Foundations | 17 | 4 |
+| II | Learning to Count | 10 | 4 |
+| III | True Count & Bet Sizing | 18 | 3 |
+| IV | Playing Deviations | 11 | 1 |
+| V | Casino Readiness | 11 | 1 |
+| VI | Advanced Advantage Play | 4 | 5 |
 
-### Drills — nineteen types, five categories, four medal tiers
+**Access**: no unit is paywalled. Unit I is free and unlimited. Units
+II–VI are open to everyone but each lesson, quiz, and practice drill costs
+one **heart** (max 5, one refills every 3 hours). Premium = unlimited
+hearts. **Placement tests**: free users can test out of Unit I; Premium up
+to Unit IV.
 
-Basic Strategy (5): Hard totals · Soft totals · Pairs · Mixed · Speed
-strategy (timed 2–4s/hand).
-Counting Foundations (7): Card flash · Single-hand count · Pair
-cancellation · Running count · Count interruptions · Speed counting
-(burst 6–10 cards) · Deck countdown (Legend &lt; 20 seconds).
-True Count & Betting (5): True count conversion · Deck estimation ·
-True count flow · Bet sizing · Realistic chips.
-Strategy & Deviations (4): Illustrious 18 · Fab 4 surrenders · Extended
-deviations · Game quality scenarios. All three-mode (Easy/Medium/Hard).
-Integrated (2): Casino simulator · Personalized practice (AI spaced
-repetition).
+### Drills — twenty-one types
 
-**Medal thresholds**: Bronze 70% · Silver 80% · Gold 90% · Legend 98%.
-Timed drills require perfect accuracy under time.
+Basic Strategy (5): Hard · Soft · Pairs · Mixed · Speed strategy.
+Counting (7): Card flash · Single-hand count · Pair cancellation · Running
+count · Count interruptions · Speed counting · Deck countdown (Legend < 20s).
+True Count & Betting (5): TC conversion · Deck estimation · TC flow · Bet
+sizing · Realistic chips. Deviations (3): Illustrious 18 · Fab 4 ·
+Extended. Integrated (1): Integrated simulator. The full casino simulator
+is a separate feature, not one of the 21. **Free drills (7, one heart per
+session)**: Hard, Soft, Pairs, Mixed, Speed strategy, Card flash,
+Single-hand count.
 
-### Counting systems — seven
+**Medal thresholds** vary by drill: strategy 70/80/90/98; counting, TC,
+deviations 65/75/85/95; bet sizing and pair cancellation Legend = 100.
 
-Hi-Lo (primary, balanced level-1), KO (unbalanced level-1), Hi-Opt I
-(balanced level-1 with ace side-count), Hi-Opt II (balanced level-2),
-Omega II (balanced level-2), Zen Count (balanced level-2), Wong Halves
-(balanced level-3 fractional). The site treats **Hi-Lo as the default**
-and the other six as literacy.
+### Counting systems
+
+**Only Hi-Lo is trained** (every lesson, drill, and sim). The settings
+picker lists five others as "coming soon". Side branch SB-2B compares
+seven alternatives: KO, Red Seven, Hi-Opt I, Hi-Opt II, Omega II, Zen,
+Wong Halves. The site says "Eight systems. Fluent in one, literate in
+seven." Do not claim other systems can be practiced.
 
 ### Casino simulator
 
-Configurable rules: H17/S17, DAS, RSA, late surrender, 1–8 decks,
-50–90% penetration, 3:2 or 6:5 payout. Bet spreads 1-4 through 1-20 or
-custom. Skill toggles for counting, true count, bet sizing, realistic
-chips, deviations (I18 / Fab 4 / Extended as sub-toggles), distractions,
-heat.
+Real finite shoe: 1–8 decks, Fisher-Yates shuffled, dealt cards removed,
+cut card at chosen penetration. H17/S17, DAS, RSA, late surrender, 3:2 or
+6:5. Heat, distractions, AI players. Six presets: **Vegas Main Floor**,
+**Vegas Strip High-Limit**, **Downtown Vegas**, **Atlantic City**,
+**Tough Vegas**, **Strip Low-Limit (6:5)**.
 
-Four built-in presets: **Vegas Strip Standard** (6D S17 DAS RSA LS 75%),
-**Downtown Vegas** (2D H17 DAS 65%), **Atlantic City** (8D S17 DAS RSA
-LS 67%), **Tough Vegas** (6D H17 DAS 70%).
+### Reference library — eight tools
 
-### Reference library — ten tools
-
-Strategy Charts (rule-aware), Deviation Indices (I18 + Fab 4 +
-Extended), Bet Spread Tables (1-4 through 1-20), Edge Calculator,
-Bankroll Planner (Kelly / fractional / risk of ruin), Variance
-Projection (Monte-Carlo 4–200 shoes), Dealer Bust Chart (by upcard × TC),
-Per-TC Edge Curve, Casino Database (user-submitted), 120+ term Glossary
-(auto-linked at first appearance in lessons).
+Strategy Charts (48 rule variants; free users get one), Deviation
+Indices, Bet Spread Tables, Edge Calculator, Bankroll Planner, Casino
+Database (842 casinos; free users see 3), Results Tracker (free), Glossary
+(126 terms, linked at first appearance in lessons).
 
 ### Gamification
 
-Twenty levels. Four belt ranks: **Blue Belt** (L1–5, Student), **Card
-Disciple** (L6–10, Counter), **Advantage Player** (L11–15, Player),
-**Dojo Legend** (L16–20, Grand Sensei). Sixty-five achievements across
-six categories (Curriculum, Practice, Mastery, Streak, Milestone,
-Behavioral). Daily-streak system (Three-Peat 3d → Centurion 100d).
+Twenty levels. Four belt ranks: **Blue Belt** (L1–5), **Card Disciple**
+(L6–10), **Advantage Player** (L11–15), **Dojo Legend** (L16–20). **72
+achievements** across six categories: Curriculum 11, Practice 11, Mastery
+18, Streak 6, Milestone 21, Secret 5.
 
-### Free vs Premium
+### Tiers and prices
 
-**Free forever**: All of Unit I (17 lessons), first 5 lessons of Unit
-II, five unlimited drills (Hard / Soft / Pairs / Mixed / Card Flash),
-every reference tool, placement tests.
-**Premium**: Everything else. Subscriptions via App Store / Google Play
-through RevenueCat — weekly, monthly, annual. **Price is server-side;
-do not hard-code dollar amounts in the site.**
+**Free**, **Premium** (weekly $4.99 · monthly $9.99 · annual $59.99 ·
+lifetime $119.99), **Pro Tools** for players who already count (monthly
+$4.99 · annual $24.99 · lifetime $49.99): Edge Calculator, Bankroll
+Planner, full casino DB, full simulator — no unlimited hearts, no Premium
+drills. In the app it sits behind "Experienced counter? See tool-only
+plans". **US prices are shown on the site** (decision 2026-11-15, after
+the heycatch audit) as constants in `page.tsx` with a dated "as of" note
+(`PRICES_AS_OF`). When store prices change, update the tier constants,
+the savings lines, the value-anchor line, the JSON-LD offers, the /vs
+pages, and `public/llms.txt` together. Refunds go through Apple/Google —
+do not promise a developer-run money-back guarantee.
+
+### Proof
+
+`storeProof` in `page.tsx` holds the App Store rating + count with an
+as-of date (4.9 from 8 ratings on 2026-11-15). Refresh it from the iTunes
+lookup API; never round counts up. `downloads` stays `null` until the
+founder publishes a real figure.
 
 ### Store URLs (canonical — these must be correct)
 
@@ -212,16 +233,17 @@ the canonical URL.
 
 Both `AppStoreIcon` and `PlayStoreIcon` are inline SVGs inside
 `page.tsx`. Both buttons appear in these places on the homepage: hero,
-pricing free, pricing premium, final CTA. Header has only the Apple
-Download.
+pricing Free, pricing Premium, pricing Pro Tools, final CTA. The header's
+Download dropdown renders its store links only when opened.
 
 If you are changing the layout and worry you broke something, curl the
 rendered HTML and confirm:
 ```bash
 curl -s http://localhost:3000/ | grep -oE '<a[^>]*(apps\.apple\.com|play\.google\.com)[^>]*>'
 ```
-You should see at minimum 5 Apple + 4 Google anchors on `/`, plus 1
-Apple (header) on each subpage.
+You should see 7 Apple anchors on `/` (5 store buttons + 2 "Read the
+reviews" links in the proof strips) and 5 Google anchors. The /vs pages
+carry one pair each.
 
 ---
 
@@ -384,8 +406,8 @@ that touches `.cinematic-*` CSS or `CinematicSequence`.
   app source or ask. "100+ Downloads", "5.0★ rating", "#1 Card Counting
   App", and "90 days to casino-ready" are all examples of claims the
   redesign removed for being unverified.
-- Do not hard-code subscription prices. RevenueCat handles them
-  server-side.
+- Do not show prices without the dated "as of" note, and do not let
+  them drift from the store (see §2 "Tiers and prices").
 - Do not replace the inline SVG icons with an icon library without
   discussing first. The site uses ten inline SVGs total; adding a
   Heroicons/Lucide dependency for ten icons is not worth it.

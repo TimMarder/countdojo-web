@@ -20,6 +20,12 @@ export function SiteFooter() {
               A structured training ground for card counters. From Blue Belt to Dojo Legend —
               the craft, taught like a craft.
             </p>
+            <p className="text-paper-muted mt-4 text-sm max-w-sm text-pretty">
+              Built by Tim, an advantage player.{" "}
+              <Link href="/about" className="link-underline text-paper">
+                Why I built it
+              </Link>
+            </p>
           </div>
           <div>
             <p className="text-label mb-5">Navigate</p>
@@ -42,6 +48,11 @@ export function SiteFooter() {
               <li>
                 <Link href="/#pricing" className="link-underline text-paper inline-block py-3">
                   Pricing
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="link-underline text-paper inline-block py-3">
+                  About
                 </Link>
               </li>
               <li>

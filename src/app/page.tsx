@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -63,7 +64,10 @@ type Unit = {
   synopsis: string;
   lessons: number;
   sideBranches?: number;
-  tier: "Free" | "Free → Premium" | "Premium";
+  /** "Free" = unlimited for everyone. "Hearts" = open to everyone, one heart
+   *  per lesson/quiz/drill; Premium makes it unlimited. Mirrors the app's
+   *  1.18 access model (no unit is paywalled any more). */
+  tier: "Free" | "Hearts";
   samples: string[];
 };
 
@@ -83,9 +87,23 @@ type Belt = {
   color: string;
 };
 
-type Testimonial = { quote: string; author: string };
+/**
+ * `context` / `handle` / `source` are empty on purpose: the audit (D3.2) asks
+ * for full identities, which only the people quoted can grant. Fill them in
+ * with permission; the section renders whatever is present.
+ */
+type Testimonial = {
+  quote: string;
+  author: string;
+  context?: string;
+  handle?: string;
+  source?: { label: string; href: string };
+};
 type FaqItem = { q: string; a: string };
-type DrillCategory = { label: string; drills: { name: string; note?: string }[] };
+type DrillCategory = {
+  label: string;
+  drills: { name: string; note?: string; free?: boolean }[];
+};
 type Screenshot = { src: string; label: string; caption: string };
 type ScreenGroup = {
   id: string;
@@ -99,14 +117,37 @@ type ReferenceTool = { label: string; desc: string };
 type AchievementCat = { label: string; count: number; examples: string[] };
 type ComparisonRow = { approach: string; gaps: string; emphasis?: boolean };
 
+/*
+ * Every count on this page comes from the app source at release/1.18.0 (the
+ * build live in the stores as of 2026-11-15) and agrees with the App Store
+ * listing. When the app changes, change these — and grep the page for the
+ * spelled-out versions ("Eighty-nine", "Twenty-one", "Seventy-two").
+ */
 const proofStats = [
   { number: "6", label: "Units" },
-  { number: "30+", label: "Lessons" },
-  { number: "19", label: "Drill types" },
-  { number: "7", label: "Counting systems" },
-  { number: "65", label: "Achievements" },
-  { number: "120+", label: "Glossary terms" },
+  { number: "89", label: "Lessons" },
+  { number: "21", label: "Drill types" },
+  { number: "48", label: "Strategy charts" },
+  { number: "72", label: "Achievements" },
+  { number: "126", label: "Glossary terms" },
 ];
+
+/**
+ * Third-party proof, read from the public App Store listing (iTunes lookup
+ * API, US storefront). Dated on purpose — update `asOf` whenever the numbers
+ * are refreshed. `downloads` stays null until there is a figure the founder is
+ * willing to publish; the proof block renders it only when present.
+ */
+const storeProof = {
+  rating: 4.9, // 4.875 on the listing, rounded the way the App Store shows it
+  ratingCount: 8,
+  asOf: "2026-11-15",
+  asOfLabel: "15 Nov 2026",
+  downloads: null as string | null,
+};
+
+/** US App Store prices as listed 2026-11-15. The store has the final say. */
+const PRICES_AS_OF = "November 2026";
 
 const curriculum: Unit[] = [
   {
@@ -115,12 +156,12 @@ const curriculum: Unit[] = [
     synopsis:
       "Card values, hard and soft totals, pairs. Basic strategy mastered to the boss test.",
     lessons: 17,
-    sideBranches: 2,
+    sideBranches: 4,
     tier: "Free",
     samples: [
       "1.1 · The Real Objective",
-      "1.3 · Hard Totals Fundamentals",
-      "1.5 · Pair Splitting — the Decision Tree",
+      "1.3 · How a Round Works",
+      "1.5 · Player Actions: Split & Surrender",
     ],
   },
   {
@@ -129,26 +170,26 @@ const curriculum: Unit[] = [
     synopsis:
       "Hi-Lo, running count, full-shoe endurance. Side branches on history, alternative systems, and the math behind counting.",
     lessons: 10,
-    sideBranches: 3,
-    tier: "Free → Premium",
+    sideBranches: 4,
+    tier: "Hearts",
     samples: [
       "2.1 · Why Blackjack Can Be Beaten",
-      "2.3 · The Hi-Lo System",
-      "2.5 · Counting Through a Full Shoe",
+      "2.3 · The Hi-Lo Card Values",
+      "2.7 · Running Count Through the Shoe",
     ],
   },
   {
     numeral: "III",
     title: "True Count & Bet Sizing",
     synopsis:
-      "The TC formula, bet spreads from 1-4 to 1-20, linear versus Kelly, bankroll and risk of ruin.",
-    lessons: 12,
-    sideBranches: 2,
-    tier: "Premium",
+      "The TC formula, deck estimation, bet spreads and ramps, Kelly sizing, bankroll, variance, and a straight answer on whether counting is right for you.",
+    lessons: 18,
+    sideBranches: 3,
+    tier: "Hearts",
     samples: [
       "3.1 · The True Count Formula",
-      "3.5 · Linear vs Kelly Sizing",
-      "3.9 · Risk of Ruin",
+      "3.12 · The Kelly Criterion & Sizing Your Bets",
+      "3.18 · Is Counting Right for You?",
     ],
   },
   {
@@ -157,10 +198,11 @@ const curriculum: Unit[] = [
     synopsis:
       "The Illustrious 18 and Fab 4 surrenders, extended indices, insurance — the number-one deviation.",
     lessons: 11,
-    tier: "Premium",
+    sideBranches: 1,
+    tier: "Hearts",
     samples: [
-      "4.2 · Insurance — the #1 Deviation",
-      "4.4 · The Big Four Standing Plays",
+      "4.2 · Insurance: The #1 Deviation",
+      "4.4 · Standing Deviations: The Big Four",
       "4.8 · The Fab 4 Surrenders",
     ],
   },
@@ -170,25 +212,26 @@ const curriculum: Unit[] = [
     synopsis:
       "Game selection, penetration, table scouting. Cover play, heat, backoffs. How to stay welcome.",
     lessons: 11,
-    tier: "Premium",
+    sideBranches: 1,
+    tier: "Hearts",
     samples: [
       "5.1 · Game Selection Fundamentals",
-      "5.6 · Disguise and Cover",
-      "5.7 · Heat Management",
+      "5.4 · Cover Play: Bet Camouflage",
+      "5.6 · Reading Heat: The Six Levels",
     ],
   },
   {
     numeral: "VI",
     title: "Advanced Advantage Play",
     synopsis:
-      "Extended deviations, shuffle tracking overview, team play, side bets, hole carding, comp hustling.",
+      "Extended deviations, shuffle tracking, team play, side bets, hole carding and edge sorting.",
     lessons: 4,
     sideBranches: 5,
-    tier: "Premium",
+    tier: "Hearts",
     samples: [
       "6.1 · Extended Deviations",
-      "SB-6A · Shuffle Tracking",
-      "SB-6C · Team Play",
+      "SB-6E · Shuffle Tracking & Ace Sequencing",
+      "SB-6D · Team Play",
     ],
   },
 ];
@@ -197,18 +240,18 @@ const drillCategories: DrillCategory[] = [
   {
     label: "Basic Strategy",
     drills: [
-      { name: "Hard totals" },
-      { name: "Soft totals" },
-      { name: "Pairs" },
-      { name: "Mixed" },
-      { name: "Speed strategy", note: "Timed · 2–4s per hand" },
+      { name: "Hard totals", free: true },
+      { name: "Soft totals", free: true },
+      { name: "Pairs", free: true },
+      { name: "Mixed", free: true },
+      { name: "Speed strategy", note: "Timed · 2–4s per hand", free: true },
     ],
   },
   {
-    label: "Counting Foundations",
+    label: "Counting",
     drills: [
-      { name: "Card flash" },
-      { name: "Single-hand count" },
+      { name: "Card flash", free: true },
+      { name: "Single-hand count", free: true },
       { name: "Pair cancellation" },
       { name: "Running count" },
       { name: "Count interruptions" },
@@ -227,19 +270,17 @@ const drillCategories: DrillCategory[] = [
     ],
   },
   {
-    label: "Strategy & Deviations",
+    label: "Deviations",
     drills: [
       { name: "Illustrious 18", note: "Easy · Medium · Hard" },
       { name: "Fab 4 surrenders", note: "Easy · Medium · Hard" },
       { name: "Extended deviations" },
-      { name: "Game quality scenarios" },
     ],
   },
   {
-    label: "Integrated Practice",
+    label: "Integrated",
     drills: [
-      { name: "Casino simulator" },
-      { name: "Personalized practice", note: "AI · spaced repetition" },
+      { name: "Integrated simulator", note: "Count · bet · play in one rep" },
     ],
   },
 ];
@@ -258,6 +299,13 @@ const countingSystems: CountingSystem[] = [
     level: "Level I · unbalanced",
     values: "2-7 → +1    8-9 → 0    10-A → −1",
     note: "Unbalanced — skips the true-count conversion step. Slight trade in accuracy for simplicity.",
+  },
+  {
+    name: "Red Seven",
+    rank: "Alternate",
+    level: "Level I · unbalanced",
+    values: "2-6, red 7 → +1    black 7, 8-9 → 0    10-A → −1",
+    note: "Hi-Lo plus the red sevens. Unbalanced, so like KO it trades the true-count step for a key count.",
   },
   {
     name: "Hi-Opt I",
@@ -297,12 +345,14 @@ const countingSystems: CountingSystem[] = [
 ];
 
 const simulatorFeatures = [
+  "A real shuffled shoe, cut card at your penetration",
   "H17 or S17 dealer rule",
   "Double after split",
   "Resplit aces, late surrender",
   "1 to 8 deck shoes",
   "Configurable penetration (50–90%)",
   "Realistic chip spreads (1-4 through 1-20)",
+  "3:2 or 6:5 blackjack payout",
   "Discard tray visualization",
   "Multi-player AI tables",
   "Distraction overlays",
@@ -313,7 +363,13 @@ const simulatorFeatures = [
 
 const casinoPresets: CasinoPreset[] = [
   {
-    name: "Vegas Strip Standard",
+    name: "Vegas Main Floor",
+    decks: "6 decks",
+    rules: ["H17", "DAS", "LS", "3:2"],
+    pen: "75% penetration",
+  },
+  {
+    name: "Vegas Strip High-Limit",
     decks: "6 decks",
     rules: ["S17", "DAS", "RSA", "LS", "3:2"],
     pen: "75% penetration",
@@ -335,6 +391,12 @@ const casinoPresets: CasinoPreset[] = [
     decks: "6 decks",
     rules: ["H17", "DAS", "3:2"],
     pen: "70% penetration",
+  },
+  {
+    name: "Strip Low-Limit",
+    decks: "8 decks",
+    rules: ["H17", "DAS", "6:5"],
+    pen: "75% penetration",
   },
 ];
 
@@ -372,7 +434,7 @@ const belts: Belt[] = [
 const referenceTools: ReferenceTool[] = [
   {
     label: "Strategy Charts",
-    desc: "Interactive and rule-aware. Flip H17/S17, DAS, RSA, surrender — the table rewrites itself.",
+    desc: "Forty-eight of them: 1, 2, or 6 decks × H17/S17 × DAS × doubling × surrender. Flip a rule and the chart rewrites itself.",
   },
   {
     label: "Deviation Indices",
@@ -380,52 +442,44 @@ const referenceTools: ReferenceTool[] = [
   },
   {
     label: "Bet Spread Tables",
-    desc: "Single and two-hand ramps from 1-4 through 1-20. Linear or Kelly-weighted.",
+    desc: "Single and two-hand ramps from 1-4 through 1-20, by true count, at your unit.",
   },
   {
     label: "Edge Calculator",
-    desc: "Enter the rules and penetration. Get base house edge, player edge per true count, and break-even TC.",
+    desc: "Enter the rules and penetration. Get the house edge, how much each rule moves it, and what deeper penetration is worth.",
   },
   {
     label: "Bankroll Planner",
-    desc: "Full Kelly, fractional Kelly, risk of ruin. Across session length and spread.",
-  },
-  {
-    label: "Variance Projection",
-    desc: "Monte-Carlo swing simulator over 4 to 200 shoes. Drawdown and confidence bands plotted.",
-  },
-  {
-    label: "Dealer Bust Chart",
-    desc: "Dealer bust frequency by upcard (2–A) across true counts −5 to +8.",
-  },
-  {
-    label: "Per-TC Edge Curve",
-    desc: "The edge-vs-count line itself. See where it turns positive.",
+    desc: "Solve for the roll you need or the risk of ruin you're taking. Custom ramps, two hands, wonging, and a 1σ / 2σ variance chart.",
   },
   {
     label: "Casino Database",
-    desc: "Player-submitted game conditions. Search by property, city, or stake.",
+    desc: "842 casinos with rules, house edge, penetration, and player-submitted intel. Load any game straight into the simulator.",
   },
   {
-    label: "120+ Glossary",
-    desc: "Ace Side Count to Wong Halves. Every term linked at its first appearance in lessons.",
+    label: "Results Tracker",
+    desc: "Log real sessions across multiple bankrolls. Actual result against expected value, charted over time.",
+  },
+  {
+    label: "126-term Glossary",
+    desc: "Ace sequencing to wonging. Every term linked at its first appearance in lessons.",
   },
 ];
 
 const achievementCategories: AchievementCat[] = [
   {
     label: "Curriculum",
-    count: 13,
+    count: 11,
     examples: ["Foundation Laid", "Side Quest Scholar", "Dojo Graduate"],
   },
   {
     label: "Practice",
-    count: 9,
+    count: 11,
     examples: ["Drill Sergeant · 100 drills", "Sharpshooter · 90% avg", "Weak Spot Closer"],
   },
   {
     label: "Mastery",
-    count: 8,
+    count: 18,
     examples: [
       "Inhuman Speed · deck countdown < 20s",
       "Deviation Master · 90%+",
@@ -439,17 +493,17 @@ const achievementCategories: AchievementCat[] = [
   },
   {
     label: "Milestone",
-    count: 8,
+    count: 21,
     examples: [
       "Blue Belt → Dojo Legend",
       "Thousand-Hand Warrior",
-      "XP Titan · 10,000 XP",
+      "Pit Boss Initiation",
     ],
   },
   {
-    label: "Behavioral",
+    label: "Secret",
     count: 5,
-    examples: ["Midnight Grinder", "Early Bird", "Speed Reader · 3 lessons in a day"],
+    examples: ["Midnight Grinder", "Early Bird", "Speed Reader"],
   },
 ];
 
@@ -473,30 +527,73 @@ const comparisons: ComparisonRow[] = [
   },
 ];
 
-const pricingFree = {
+type PriceLine = { amount: string; period: string };
+type PricingTier = {
+  label: string;
+  /** Short mono tag in the card corner. */
+  tag: string;
+  headline: string;
+  prices?: PriceLine[];
+  saving?: string;
+  items: string[];
+  /** What the tier deliberately leaves out — stated, not implied. */
+  excludes?: string;
+};
+
+const pricingFree: PricingTier = {
   label: "Free",
+  tag: "Forever",
   headline: "Start training. No card required.",
   items: [
-    "All 17 lessons of Unit I — Blackjack Foundations",
-    "First five lessons of Unit II — Hi-Lo basics",
-    "Five unlimited practice drills · Hard, Soft, Pairs, Mixed, Card Flash",
-    "Every reference — strategy charts, edge calculator, 120+ glossary",
-    "Placement tests for skip-ahead",
+    "All 17 lessons of Unit I — Blackjack Foundations, unlimited",
+    "Units II through VI, open to everyone — one heart per lesson, quiz, or drill",
+    "Five hearts, refilling one every three hours",
+    "Seven practice drills · Hard, Soft, Pairs, Mixed, Speed strategy, Card flash, Single-hand count",
+    "The basic strategy chart, the 126-term glossary, and the Results Tracker",
+    "A placement test to skip Unit I",
   ],
 };
 
-const pricingPremium = {
+const pricingPremium: PricingTier = {
   label: "Premium",
+  tag: "Recommended",
   headline: "The full dojo.",
-  items: [
-    "Units II through VI — true count, deviations, readiness, advanced play",
-    "All 19 drill types on adaptive difficulty with medal tiers",
-    "The casino simulator with full rule configuration",
-    "Personalized practice via spaced-repetition review",
-    "65 achievements, 20 levels, four belt ranks",
-    "Cloud sync across devices",
+  prices: [
+    { amount: "$4.99", period: "week" },
+    { amount: "$9.99", period: "month" },
+    { amount: "$59.99", period: "year" },
+    { amount: "$119.99", period: "lifetime" },
   ],
-  plans: ["Weekly", "Monthly", "Annual"],
+  saving: "Annual saves 50% vs monthly",
+  items: [
+    "Unlimited hearts — every lesson in Units I–VI, as often as you like",
+    "All 21 drill types on adaptive difficulty with medal tiers",
+    "The full casino simulator — every rule, six presets, heat and distractions",
+    "All 48 strategy charts, deviation indices, and bet spread tables",
+    "Edge Calculator, Bankroll Planner, and the full 842-casino database",
+    "Placement tests through Unit IV",
+  ],
+};
+
+const pricingProTools: PricingTier = {
+  label: "Pro Tools",
+  tag: "Tools only",
+  headline: "For players who already count.",
+  prices: [
+    { amount: "$4.99", period: "month" },
+    { amount: "$24.99", period: "year" },
+    { amount: "$49.99", period: "lifetime" },
+  ],
+  saving: "Annual saves 58% vs monthly",
+  items: [
+    "Edge Calculator and Bankroll Planner",
+    "The full 842-casino database, with player intel",
+    "The full casino simulator, loadable from any casino's rules",
+    "All 48 strategy charts, deviation indices, and bet spread tables",
+    "Everything in Free, including the Results Tracker",
+  ],
+  excludes:
+    "Leaves out the curriculum upgrade: no unlimited hearts, no Premium drills, no placement tests past Unit I.",
 };
 
 const testimonials: Testimonial[] = [
@@ -532,6 +629,22 @@ const faq: FaqItem[] = [
     a: "No. Counting gives you a mathematical edge over time — typically half a percent to two percent at a favorable true count. Variance means short-term losses are normal. You are building an advantage, not a certainty.",
   },
   {
+    q: "Does the simulator deal from a real shoe?",
+    a: "Yes. It builds a shoe of one to eight decks, shuffles it, and deals off the top. A card that has been dealt is gone until the reshuffle, and the cut card sits at the penetration you choose. Cards are never drawn independently at random — which is the only way a running count can mean anything.",
+  },
+  {
+    q: "Why do lessons use hearts?",
+    a: "So the whole curriculum can be free. Unit I is unlimited. From Unit II on, each lesson, quiz, and practice drill costs one heart. You hold up to five, and they refill one every three hours — so nothing is locked, only paced. Premium removes hearts entirely.",
+  },
+  {
+    q: "What is the difference between Free, Premium, and Pro Tools?",
+    a: "Free is all of Unit I, every other unit paced by hearts, seven practice drills, the basic strategy chart, the glossary, and the Results Tracker. Premium is unlimited hearts, all twenty-one drill types, the full casino simulator, and every tool. Pro Tools is for players who already count: the calculators, the full casino database, and the simulator, without the curriculum upgrade.",
+  },
+  {
+    q: "Can I get a refund?",
+    a: "Purchases are billed by Apple or Google, so refunds go through them: on iPhone at reportaproblem.apple.com, on Android from your Google Play order history. Cancel anytime in your store's subscription settings; you keep access until the period you paid for ends.",
+  },
+  {
     q: "How long does it take to learn?",
     a: "Most players finish the foundations in thirty to sixty days with daily practice. Casino-ready performance takes longer — weeks of speed work on the drills, plus focused sessions in the simulator.",
   },
@@ -540,12 +653,12 @@ const faq: FaqItem[] = [
     a: "No. Hi-Lo only requires adding and subtracting one. True-count conversion is dividing a small integer by another small integer. Every bit of arithmetic is taught step by step.",
   },
   {
-    q: "What is the difference between Free and Premium?",
-    a: "Free gives you all seventeen lessons of Unit I, the first five lessons of Unit II, five unlimited practice drills, and every reference tool. Premium opens Units II through VI, the casino simulator, personalized practice, and the full nineteen-drill library.",
+    q: "Which counting system should I learn?",
+    a: "Hi-Lo. It is the best practical balance of accuracy and ease of use, and every serious player's first system. Every lesson, drill, and simulator session uses it. Side branch SB-2B compares seven alternatives so you know what you are choosing not to learn.",
   },
   {
-    q: "Which counting system should I learn?",
-    a: "Hi-Lo. It is the best practical balance of accuracy and ease of use, and every serious player's first system. Six other systems are available in the app for the curious or the obsessed.",
+    q: "Who is Count Dojo not for?",
+    a: "Anyone looking for a betting system, a casino game, or a promise of winnings. There is no real-money play and no guarantee. It is for people who want to practice a legal skill until it holds up at a real table.",
   },
   {
     q: "Can I use Count Dojo offline?",
@@ -559,7 +672,7 @@ const screenGroups: ScreenGroup[] = [
     name: "Learn",
     numeral: "01",
     blurb:
-      "Six units, thirty-plus lessons. Each one teaches a single idea, shows the arithmetic on real hands, then checks that it landed.",
+      "Six units, eighty-nine lessons. Each one teaches a single idea, shows the arithmetic on real hands, then checks that it landed.",
     shots: [
       {
         src: "/images/app/learn-path.webp",
@@ -593,7 +706,7 @@ const screenGroups: ScreenGroup[] = [
     name: "Practice",
     numeral: "02",
     blurb:
-      "Nineteen drill types across counting, basic strategy, and advanced play. Adaptive difficulty, graded to medal tiers.",
+      "Twenty-one drill types across counting, basic strategy, and advanced play. Adaptive difficulty, graded to medal tiers.",
     shots: [
       {
         src: "/images/app/practice-library.webp",
@@ -706,7 +819,7 @@ const screenGroups: ScreenGroup[] = [
       {
         src: "/images/app/tools-glossary.webp",
         label: "Glossary",
-        caption: "124 terms, from ace sequencing to wonging.",
+        caption: "126 terms, from ace sequencing to wonging.",
       },
     ],
   },
@@ -720,7 +833,7 @@ const screenGroups: ScreenGroup[] = [
       {
         src: "/images/app/field-database.webp",
         label: "Casino database",
-        caption: "843 casinos, filterable by decks, dealer rule, and payout.",
+        caption: "842 casinos, filterable by decks, dealer rule, and payout.",
       },
       {
         src: "/images/app/field-casino.webp",
@@ -737,6 +850,11 @@ const screenGroups: ScreenGroup[] = [
 ];
 
 const allScreens = screenGroups.flatMap((g) => g.shots);
+
+/** One-sentence descriptive alt, built from the visible label and caption. */
+function screenAlt(surface: string, s: Screenshot) {
+  return `Count Dojo app, ${surface.toLowerCase()} screen — ${s.label}: ${s.caption}`;
+}
 
 function Reveal({
   children,
@@ -808,10 +926,18 @@ function ChapterMark({
   return (
     <p className={`text-chapter ${centered ? "text-center" : ""} ${className}`}>
       <span aria-hidden>§ </span>
+      {/* Always animate *to* visible. Branching whileInView on `reduced` left
+          the numeral stuck at opacity 0 for reduced-motion users: the server
+          renders the hidden initial state, then the client switched the
+          reveal off. Reduced motion now gets an instant reveal instead. */}
       <motion.span
-        initial={reduced ? false : { rotateY: 90, opacity: 0 }}
-        whileInView={reduced ? undefined : { rotateY: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 110, damping: 16, mass: 0.8 }}
+        initial={{ rotateY: 90, opacity: 0 }}
+        whileInView={{ rotateY: 0, opacity: 1 }}
+        transition={
+          reduced
+            ? { duration: 0 }
+            : { type: "spring", stiffness: 110, damping: 16, mass: 0.8 }
+        }
         viewport={{ once: true, amount: 0.6 }}
         style={{
           display: "inline-block",
@@ -1384,9 +1510,16 @@ function CinematicSequence() {
   );
 }
 
-function StoreButtons({ primary = false }: { primary?: boolean }) {
+function StoreButtons({
+  primary = false,
+  stacked = false,
+}: {
+  primary?: boolean;
+  /** Always one-per-row — for narrow containers like the pricing cards. */
+  stacked?: boolean;
+}) {
   return (
-    <div className="flex flex-col sm:flex-row gap-3">
+    <div className={`flex flex-col gap-3 ${stacked ? "" : "sm:flex-row"}`}>
       <a
         href={APP_STORE_URL}
         target="_blank"
@@ -1657,10 +1790,12 @@ function HeroSection() {
       >
         <source src="/videos/blackjack-hero.mp4" type="video/mp4" />
       </video>
-      <div className="relative z-10 site-shell pt-32 pb-24 md:pt-40 md:pb-32 min-h-[88svh] flex items-end">
+      <div className="relative z-10 site-shell pt-24 pb-24 md:pt-40 md:pb-32 min-h-[88svh] flex items-end">
         <div className="grid md:grid-cols-[1.5fr_1fr] gap-16 w-full items-end">
           <div className="hero-stagger max-w-2xl">
             <ChapterMark roman="I" title="An education in advantage play" />
+            {/* The category line lives inside the h1 so the headline names what
+                this is (card counting) without losing the craft framing. */}
             <h1 className="font-display text-display-xl text-paper text-balance mt-6">
               A serious craft.
               <br />
@@ -1668,30 +1803,39 @@ function HeroSection() {
                 Finally taught
               </span>{" "}
               like one.
+              <span className="hero-h1-kicker">
+                Card counting, from first lesson to casino floor.
+              </span>
             </h1>
-            <p className="text-lg md:text-xl text-paper-muted mt-8 max-w-xl text-pretty">
-              Six units. Thirty lessons. Nineteen drill types. A casino simulator calibrated to
-              real table rules. Count Dojo is the training ground for players who treat card
-              counting as what it is — a disciplined, legal, learnable skill.
+            <p className="text-base sm:text-lg md:text-xl text-paper-muted mt-6 md:mt-8 max-w-xl text-pretty">
+              Count Dojo is an iPhone and Android app for players who treat card counting as
+              what it is — a disciplined, legal, learnable skill. Eighty-nine lessons, twenty-one
+              drill types, and a casino simulator dealt from a real shoe, until you can sit at a
+              real table and hold the count.
             </p>
-            <div className="mt-10">
+            <div className="mt-8 md:mt-10">
               <StoreButtons primary />
+              <a href="#curriculum" className="link-mono inline-flex items-center min-h-11 mt-4">
+                Or see the six-unit curriculum first ↓
+              </a>
             </div>
-            <p className="text-label mt-8">
-              {["Free to start", "No math skill required", "Works offline"].join(DOT)}
-              <span aria-hidden="true">{DOT}</span>
-              <button
-                type="button"
-                onClick={toggleFilm}
-                className="link-mono align-baseline underline decoration-dotted underline-offset-4 py-3 -my-3"
-              >
-                {playing ? "Pause film" : "Play film"}
-              </button>
+            <p className="text-label mt-6">
+              {["Free to start", "No card required", "Works offline"].join(DOT)}
             </p>
           </div>
           <HeroCardFan />
         </div>
       </div>
+      {/* Film control sits in the corner, out of the CTA row: it is a
+          preference, not a next step. */}
+      <button
+        type="button"
+        onClick={toggleFilm}
+        className="hero-film-toggle link-mono"
+        aria-label={playing ? "Pause background film" : "Play background film"}
+      >
+        {playing ? "Pause film" : "Play film"}
+      </button>
     </section>
   );
 }
@@ -1743,12 +1887,7 @@ function ThorpEpigraph() {
 }
 
 function TierBadge({ tier }: { tier: Unit["tier"] }) {
-  const color =
-    tier === "Free"
-      ? "var(--emerald)"
-      : tier === "Free → Premium"
-        ? "var(--amber)"
-        : "var(--paper-muted)";
+  const color = tier === "Free" ? "var(--emerald)" : "var(--paper-muted)";
   return (
     <span
       className="font-mono text-[0.65rem] tracking-[0.22em] uppercase"
@@ -1773,8 +1912,9 @@ function CurriculumSection() {
             </h2>
           </div>
           <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
-            A structured curriculum from card values to advanced advantage play. Placement tests
-            let experienced players skip directly to the unit that suits them — with every lesson
+            Seventy-one core lessons and eighteen side branches, from card values to sitting
+            down at a real table and holding the count. Every unit is open on the free plan.
+            Already know basic strategy? A placement test skips you past Unit I — every lesson
             grounded in math, not hype.
           </p>
         </div>
@@ -1807,6 +1947,13 @@ function CurriculumSection() {
             </Reveal>
           ))}
         </div>
+        <p className="mt-10 max-w-3xl text-paper-muted text-pretty">
+          <span className="text-label text-emerald-accent mr-3">Free</span>
+          Unlimited, for everyone.{" "}
+          <span className="text-label text-paper mx-3">Hearts</span>
+          Open to everyone: each lesson, quiz, or drill costs one heart. You hold five, and they
+          refill one every three hours. Premium makes them unlimited.
+        </p>
       </div>
     </section>
   );
@@ -1820,7 +1967,7 @@ function DrillsSection() {
           <div>
             <ChapterMark roman="III" title="The Repetition" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
-              Nineteen drills. Adaptive. Graded.
+              Twenty-one drills. Adaptive. Graded.
             </h2>
           </div>
           <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
@@ -1849,6 +1996,11 @@ function DrillsSection() {
                         className="font-display text-xl md:text-2xl text-paper"
                       >
                         {d.name}
+                        {d.free && (
+                          <span className="font-mono text-[0.6rem] tracking-[0.22em] uppercase text-emerald-accent align-middle ml-3">
+                            Free
+                          </span>
+                        )}
                       </p>
                       {d.note && (
                         <p className="font-mono text-[0.7rem] tracking-[0.16em] uppercase text-emerald-accent mt-1.5">
@@ -1864,7 +2016,10 @@ function DrillsSection() {
         </div>
 
         <div className="mt-20 pt-10 border-t border-rule grid md:grid-cols-[auto_1fr] gap-8 md:gap-12 items-center">
-          <p className="text-label">Medal thresholds</p>
+          <p className="text-label">
+            Medal thresholds
+            <span className="block text-paper-faint mt-1">Strategy drills</span>
+          </p>
           <div className="flex flex-wrap gap-x-10 gap-y-3 font-mono text-sm tabular-nums text-paper">
             <span>
               <span className="text-paper-faint">Bronze</span>  70%
@@ -1879,7 +2034,8 @@ function DrillsSection() {
               <span className="text-paper-faint">Legend</span>  98%
             </span>
             <span className="text-paper-muted ml-auto">
-              Timed drills require perfect accuracy under time.
+              Counting and deviation drills: 65 / 75 / 85 / 95. Timed drills require perfect
+              accuracy under time.
             </span>
           </div>
         </div>
@@ -1896,14 +2052,15 @@ function CountingSystemsSection() {
           <div>
             <ChapterMark roman="IV" title="The Languages" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
-              Seven systems.
+              Eight systems.
               <br />
-              Fluent in one, literate in six.
+              Fluent in one, literate in seven.
             </h2>
           </div>
           <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
-            Hi-Lo is the gold standard and our default. Side branches cover six alternatives —
-            for history, curiosity, and the players who benefit from specialized systems.
+            Hi-Lo is the gold standard, and every lesson, drill, and simulator shoe runs on it.
+            Side branch SB-2B lays the other seven side by side — so you know exactly what you
+            are choosing not to learn.
           </p>
         </div>
         <div className="editorial-list">
@@ -2258,9 +2415,11 @@ function SimulatorSection() {
               A casino, calibrated.
             </h2>
             <p className="text-lg text-paper-muted mb-10 max-w-xl text-pretty">
-              The simulator models the rules that matter: dealer stand, double after split, shoe
-              size, penetration, distractions, surveillance. Your bet sizing, true-count reads,
-              and play decisions are graded in real time.
+              The common complaint about counting trainers: nowhere to practice keeping the count
+              over multiple full table hands. This is that place. The simulator deals from a real
+              shuffled shoe — dealt cards stay gone until the cut card comes out — with other
+              players at the table, distractions, and a pit boss watching your spread. Your bet
+              sizing, true-count reads, and play decisions are graded in real time.
             </p>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
               {simulatorFeatures.map((f) => (
@@ -2331,7 +2490,7 @@ function BeltsSection() {
             </h2>
           </div>
           <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
-            Four ranks. Twenty levels. Sixty-five achievements. Dojo Legend is not a time-on-app
+            Four ranks. Twenty levels. Seventy-two achievements. Dojo Legend is not a time-on-app
             reward — it is earned by mastering every drill, unit, and simulator scenario.
           </p>
         </div>
@@ -2378,14 +2537,16 @@ function ReferenceSection() {
           <div>
             <ChapterMark roman="VIII" title="The Reference Library" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
-              Ten tools.
+              Eight tools.
               <br />
               Always one tap away.
             </h2>
           </div>
           <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
-            The drills build the reflex. The reference library keeps the math honest. Everything
-            is live, rule-aware, and works offline.
+            The drills build the reflex. The reference library keeps the math honest — and
+            before a trip, it does the planning: look up the casino, check its rules and
+            penetration, load the game into the simulator, and size your bankroll before you sit
+            down.
           </p>
         </div>
         <div className="grid md:grid-cols-2 gap-x-14 md:gap-x-20">
@@ -2421,7 +2582,7 @@ function BadgesSection() {
           <div>
             <ChapterMark roman="IX" title="The Badges" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
-              Sixty-five ways
+              Seventy-two ways
               <br />
               to be caught trying.
             </h2>
@@ -2509,8 +2670,98 @@ function ComparisonSection() {
             </div>
           ))}
         </div>
+        <p className="mt-10 text-paper-muted text-pretty">
+          Comparing apps by name?{" "}
+          <Link href="/vs/blackjack-apprenticeship" className="link-underline text-paper">
+            Count Dojo vs Blackjack Apprenticeship
+          </Link>
+          <span aria-hidden="true">{DOT}</span>
+          <Link href="/vs/blackjack-theory" className="link-underline text-paper">
+            Count Dojo vs Blackjack Theory
+          </Link>
+        </p>
       </div>
     </section>
+  );
+}
+
+/**
+ * Dated, linked, third-party proof from the App Store listing. Small numbers,
+ * stated plainly — no rounding up, no "loved by thousands".
+ */
+function StoreProof({ className = "" }: { className?: string }) {
+  return (
+    <div
+      className={`flex flex-wrap items-baseline gap-x-6 gap-y-2 border-y border-rule py-5 ${className}`}
+    >
+      <span className="text-stat text-4xl tabular-nums text-paper">
+        {storeProof.rating.toFixed(1)}
+        <span className="text-paper-faint text-2xl"> / 5</span>
+      </span>
+      <span className="text-paper-muted text-pretty">
+        App Store rating from {storeProof.ratingCount} ratings
+        {storeProof.downloads ? `${DOT}${storeProof.downloads} downloads` : ""}
+      </span>
+      <span className="font-mono text-[0.66rem] tracking-[0.18em] uppercase text-paper-faint tabular-nums">
+        Checked <time dateTime={storeProof.asOf}>{storeProof.asOfLabel}</time>
+      </span>
+      <a
+        href={APP_STORE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="link-mono md:ml-auto inline-flex items-center min-h-11"
+      >
+        Read the reviews →
+      </a>
+    </div>
+  );
+}
+
+function TierPrices({ tier }: { tier: PricingTier }) {
+  if (!tier.prices) return null;
+  return (
+    <div className="mb-8">
+      <p className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-sm tabular-nums text-paper">
+        {tier.prices.map((pr) => (
+          <span key={pr.period} className="whitespace-nowrap">
+            {pr.amount}
+            <span className="text-paper-faint">
+              {pr.period === "lifetime" ? " lifetime, once" : ` / ${pr.period}`}
+            </span>
+          </span>
+        ))}
+      </p>
+      {tier.saving && (
+        <p className="font-mono text-[0.66rem] tracking-[0.18em] uppercase text-emerald-accent mt-2">
+          {tier.saving}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function TierItems({ items }: { items: string[] }) {
+  return (
+    <ul className="space-y-3 mb-8 flex-1">
+      {items.map((item) => (
+        <li key={item} className="flex items-start gap-3 text-sm md:text-base text-paper">
+          <span className="font-mono text-emerald-accent mt-1 shrink-0">—</span>
+          <span className="text-pretty">{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function TierHeader({ tier, accent = false }: { tier: PricingTier; accent?: boolean }) {
+  return (
+    <>
+      <div className="flex items-baseline justify-between gap-4 mb-4">
+        <h3 className="font-display text-3xl md:text-4xl text-paper">{tier.label}</h3>
+        <span className={`text-label ${accent ? "text-emerald-accent" : ""}`}>{tier.tag}</span>
+      </div>
+      <p className="text-paper-muted mb-4 text-pretty">{tier.headline}</p>
+    </>
   );
 }
 
@@ -2518,7 +2769,7 @@ function PricingSection() {
   return (
     <section id="pricing" className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
-        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-16">
+        <div className="grid md:grid-cols-[1fr_2.1fr] gap-10 md:gap-16 mb-12">
           <div>
             <ChapterMark roman="XI" title="Tuition" className="mb-5" />
             <h2 className="font-display text-display-lg text-paper text-balance">
@@ -2528,67 +2779,56 @@ function PricingSection() {
             </h2>
           </div>
           <p className="text-lg text-paper-muted self-end max-w-xl text-pretty">
-            The foundations are free forever. True count, deviations, the casino simulator, and
-            the personalized-practice engine sit behind a single subscription — weekly, monthly,
-            or annual.
+            The foundations are free forever, and every other unit is open on the free plan,
+            paced by hearts. Premium removes the pacing and opens the simulator, every drill, and
+            every tool. Already count? Pro Tools is the toolkit without the curriculum.
           </p>
         </div>
-        <div className="grid md:grid-cols-2 gap-px bg-rule border border-rule">
+
+        <StoreProof className="mb-12" />
+
+        <div className="grid lg:grid-cols-3 gap-px bg-rule border border-rule">
           <div className="bg-ink-0 p-8 md:p-10 flex flex-col">
-            <div className="flex items-baseline justify-between mb-4">
-              <h3
-                className="font-display text-3xl md:text-4xl text-paper"
-              >
-                {pricingFree.label}
-              </h3>
-              <span className="text-label text-emerald-accent">Forever</span>
-            </div>
-            <p className="text-paper-muted mb-8 text-pretty">{pricingFree.headline}</p>
-            <ul className="space-y-3 mb-10 flex-1">
-              {pricingFree.items.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-3 text-sm md:text-base text-paper"
-                >
-                  <span className="font-mono text-emerald-accent mt-1 shrink-0">—</span>
-                  <span className="text-pretty">{item}</span>
-                </li>
-              ))}
-            </ul>
-            <StoreButtons />
+            <TierHeader tier={pricingFree} accent />
+            <p className="font-mono text-sm tabular-nums text-paper mb-8">$0</p>
+            <TierItems items={pricingFree.items} />
+            <StoreButtons stacked />
           </div>
-          <div className="bg-ink-2 p-8 md:p-10 flex flex-col relative">
-            <span className="absolute top-6 right-6 text-label text-emerald-accent">
-              Recommended
-            </span>
-            <div className="flex items-baseline justify-between mb-4 mt-2">
-              <h3
-                className="font-display text-3xl md:text-4xl text-paper"
-              >
-                {pricingPremium.label}
-              </h3>
-            </div>
-            <p className="text-paper-muted mb-2 text-pretty">{pricingPremium.headline}</p>
-            <p className="font-mono text-[0.65rem] tracking-[0.22em] uppercase text-paper-faint mb-8">
-              {pricingPremium.plans.join(DOT)}
+
+          <div className="bg-ink-2 p-8 md:p-10 flex flex-col">
+            <TierHeader tier={pricingPremium} accent />
+            <TierPrices tier={pricingPremium} />
+            <TierItems items={pricingPremium.items} />
+            <StoreButtons primary stacked />
+            <p className="text-sm text-paper mt-5 text-pretty">
+              $59.99 a year — less than three minimum bets at a $25 table.
             </p>
-            <ul className="space-y-3 mb-10 flex-1">
-              {pricingPremium.items.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-3 text-sm md:text-base text-paper"
-                >
-                  <span className="font-mono text-emerald-accent mt-1 shrink-0">—</span>
-                  <span className="text-pretty">{item}</span>
-                </li>
-              ))}
-            </ul>
-            <StoreButtons primary />
-            <p className="font-mono text-[0.66rem] tracking-[0.18em] uppercase text-paper-faint mt-5">
-              Subscriptions via App Store or Google Play. Cancel anytime.
+            <p className="font-mono text-[0.66rem] leading-relaxed tracking-[0.14em] uppercase text-paper-faint mt-3">
+              Billed by Apple or Google. Cancel anytime in your store settings; refunds go
+              through the store&rsquo;s standard process.
+            </p>
+          </div>
+
+          <div className="bg-ink-0 p-8 md:p-10 flex flex-col">
+            <TierHeader tier={pricingProTools} />
+            <TierPrices tier={pricingProTools} />
+            <TierItems items={pricingProTools.items} />
+            {pricingProTools.excludes && (
+              <p className="text-sm text-paper-muted mb-8 text-pretty">
+                {pricingProTools.excludes}
+              </p>
+            )}
+            <StoreButtons stacked />
+            <p className="font-mono text-[0.66rem] leading-relaxed tracking-[0.14em] uppercase text-paper-faint mt-5">
+              In the app, open the upgrade screen and tap &ldquo;Experienced counter? See tool-only plans&rdquo;.
             </p>
           </div>
         </div>
+
+        <p className="font-mono text-[0.66rem] tracking-[0.14em] uppercase text-paper-faint mt-6 text-pretty">
+          US App Store prices as of {PRICES_AS_OF}. Your store shows local pricing and has the
+          final say.
+        </p>
       </div>
     </section>
   );
@@ -2730,7 +2970,7 @@ function ScreenshotsSection() {
                   <span className="screen-card__device">
                     <Image
                       src={s.src}
-                      alt=""
+                      alt={screenAlt(group.name, s)}
                       width={414}
                       height={900}
                       sizes="(max-width: 767px) 60vw, 260px"
@@ -2816,6 +3056,7 @@ function TestimonialsSection() {
     <section className="section-rhythm bg-ink-1 border-y border-rule">
       <div className="site-shell">
         <ChapterMark roman="XIII" title="Voices" className="mb-10" />
+        <StoreProof className="mb-14" />
         <div className="grid md:grid-cols-2 gap-x-14 md:gap-x-20 gap-y-14 md:gap-y-16">
           {testimonials.map((t, i) => (
             <Reveal key={t.author} delay={i * 80}>
@@ -2827,7 +3068,25 @@ function TestimonialsSection() {
                   {t.quote}
                   <span className="text-emerald-accent ml-1">&rdquo;</span>
                 </blockquote>
-                <figcaption className="text-label mt-8">— {t.author}</figcaption>
+                <figcaption className="text-label mt-8">
+                  — {t.author}
+                  {t.handle && <span className="text-paper-faint">{DOT}{t.handle}</span>}
+                  {t.context && (
+                    <span className="block normal-case tracking-normal font-sans text-sm text-paper-faint mt-2">
+                      {t.context}
+                    </span>
+                  )}
+                  {t.source && (
+                    <a
+                      href={t.source.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="link-mono inline-block mt-2"
+                    >
+                      {t.source.label} →
+                    </a>
+                  )}
+                </figcaption>
               </figure>
             </Reveal>
           ))}
@@ -2939,6 +3198,72 @@ function FinalCTA() {
   );
 }
 
+/**
+ * JSON-LD for search engines and AI assistants. Built from the same constants
+ * the page renders, so the structured data can never drift from the copy.
+ */
+function StructuredData() {
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://countdojo.com/#org",
+        name: "Count Dojo",
+        url: "https://countdojo.com",
+        logo: "https://countdojo.com/images/Count%20Dojo%20Transparent%20Logo.png",
+        email: "support@countdojo.com",
+        sameAs: [
+          "https://x.com/TheCountDojo",
+          "https://www.instagram.com/countdojo/",
+          "https://www.facebook.com/people/Count-Dojo/61552273026312/",
+          "https://www.tiktok.com/@countdojo",
+        ],
+      },
+      {
+        "@type": "MobileApplication",
+        "@id": "https://countdojo.com/#app",
+        name: "Count Dojo",
+        alternateName: "Count Dojo - BJ Card Counting",
+        url: "https://countdojo.com",
+        description:
+          "A blackjack card-counting training app: six units and 89 lessons, 21 drill types, 48 strategy charts, and a casino simulator dealt from a real shuffled shoe.",
+        operatingSystem: "iOS, Android",
+        applicationCategory: "EducationalApplication",
+        installUrl: [APP_STORE_URL, GOOGLE_PLAY_URL],
+        publisher: { "@id": "https://countdojo.com/#org" },
+        offers: [
+          { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD" },
+          { "@type": "Offer", name: "Premium Annual", price: "59.99", priceCurrency: "USD" },
+          { "@type": "Offer", name: "Pro Tools Annual", price: "24.99", priceCurrency: "USD" },
+        ],
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: storeProof.rating,
+          ratingCount: storeProof.ratingCount,
+          bestRating: 5,
+        },
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://countdojo.com/#faq",
+        mainEntity: faq.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+    ],
+  };
+  return (
+    <script
+      type="application/ld+json"
+      // Static, first-party constants only — no user input reaches this.
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }}
+    />
+  );
+}
+
 export default function Home() {
   const homeLinks = [
     { label: "Curriculum", href: "#curriculum" },
@@ -2949,6 +3274,7 @@ export default function Home() {
   ];
   return (
     <div className="min-h-screen">
+      <StructuredData />
       <SiteHeader links={homeLinks} />
       <main>
         <HeroSection />
