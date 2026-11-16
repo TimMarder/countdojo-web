@@ -93,7 +93,7 @@ export default async function OpengraphImage() {
               color: "#a8a29e",
             }}
           >
-            30+ lessons · 19 drills · 7 systems · 65 achievements
+            89 lessons · 21 drills · 48 charts · 72 achievements
           </span>
           <span
             style={{

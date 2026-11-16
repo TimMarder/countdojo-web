@@ -1,0 +1,28 @@
+# Count Dojo
+
+> Count Dojo is an iPhone and Android app that teaches blackjack card counting from zero to casino-ready, as a graded course. Counting is a legal skill; the app is training only — no real-money play, no promise of winnings.
+
+Facts below match the live app (v1.18.0) and its App Store listing as of 2026-11-15.
+
+## What it teaches
+- Six units, 89 lessons (71 core + 18 side branches): Blackjack Foundations, Learning to Count, True Count & Bet Sizing, Playing Deviations, Casino Readiness, Advanced Advantage Play.
+- Counting system: Hi-Lo is used in every lesson, drill, and simulator session. One side-branch lesson compares seven alternatives (KO, Red Seven, Hi-Opt I, Hi-Opt II, Omega II, Zen Count, Wong Halves).
+- 21 drill types across basic strategy, counting, true count and betting, deviations (Illustrious 18, Fab 4, extended), and an integrated drill. Medal tiers: bronze, silver, gold, legend.
+- Casino simulator: deals from a real shuffled shoe of 1–8 decks with a cut card at the chosen penetration; H17/S17, DAS, RSA, late surrender, 3:2 or 6:5; heat, distractions, and graded cover play. Six presets: Vegas Main Floor, Vegas Strip High-Limit, Downtown Vegas, Atlantic City, Tough Vegas, Strip Low-Limit (6:5).
+- Reference: 48 strategy charts, deviation indices, bet spread tables, Edge Calculator, Bankroll Planner, an 842-casino database, a Results Tracker, and a 126-term glossary.
+
+## Plans (US App Store prices, November 2026)
+- Free: all of Unit I unlimited; Units II–VI open but paced by hearts (5 max, one refills every 3 hours); seven practice drills; basic strategy chart, glossary, Results Tracker.
+- Premium: unlimited hearts, all drills, full simulator, every tool. $4.99/week, $9.99/month, $59.99/year, or $119.99 lifetime.
+- Pro Tools (for players who already count): Edge Calculator, Bankroll Planner, full casino database, full simulator — no curriculum upgrade. $4.99/month, $24.99/year, or $49.99 lifetime.
+- Billing and refunds go through Apple or Google.
+
+## Links
+- [Homepage](https://countdojo.com/)
+- [About the founder](https://countdojo.com/about)
+- [Count Dojo vs Blackjack Apprenticeship](https://countdojo.com/vs/blackjack-apprenticeship)
+- [Count Dojo vs Blackjack Theory](https://countdojo.com/vs/blackjack-theory)
+- [App Store](https://apps.apple.com/us/app/count-dojo-bj-card-counting/id6760961014)
+- [Google Play](https://play.google.com/store/apps/details?id=com.countdojo.app)
+- [Privacy](https://countdojo.com/privacy) · [Terms](https://countdojo.com/terms)
+- Contact: support@countdojo.com
